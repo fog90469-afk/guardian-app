@@ -29,14 +29,11 @@ function checkLimit(req, res, next) {
     userLimits.set(userKey, user);
   }
 
-  // Если попытки кончились — СРАЗУ показываем окно оплаты
   if (user.tries <= 0) {
     return res.status(403).json({ error: 'LIMIT_REACHED' });
   }
 
-  // Если попытки есть — списываем одну и пропускаем
   user.tries -= 1;
-  
   res.setHeader('X-Tries-Left', user.tries);
   next();
 }
@@ -47,7 +44,7 @@ app.use('/api/passwords', checkLimit, require('./routes/passwords'));
 app.use('/api/urls', checkLimit, require('./routes/urls'));
 app.use('/api/files', checkLimit, require('./routes/files'));
 
-// CRYSTALPAY
+// CRYSTALPAY (ИСПРАВЛЕННЫЙ)
 app.post('/api/buy', async (req, res) => {
   try {
     const response = await fetch('https://api.crystalpay.io/v2/invoice/create', {
@@ -66,15 +63,25 @@ app.post('/api/buy', async (req, res) => {
 
     const data = await response.json();
 
-    if (data.error) {
-      console.log("❌ ОШИБКА CRYSTALPAY:", data.error);
-      return res.status(500).json({ error: data.error });
-    }
-
+    // Проверяем, пришла ли ссылка на оплату (url)
     if (data.url) {
       res.json({ url: data.url });
-    } else {
-      res.status(500).json({ error: 'Неизвестная ошибка' });
+    } 
+    // Если пришла ошибка
+    else if (data.error) {
+      console.log("❌ ОШИБКА CRYSTALPAY:", data.error);
+      res.status(500).json({ error: data.error });
+    } 
+    // Если пришел флаг true и id счета - собираем ссылку сами
+    else if (data.id) {
+      // Стандартный формат ссылки на оплату CrystalPay
+      const payUrl = `https://crystalpay.io/invoice/${data.id}`;
+      res.json({ url: payUrl });
+    } 
+    // Если ничего не подошло
+    else {
+      console.log("❌ НЕИЗВЕСТНЫЙ ОТВЕТ:", data);
+      res.status(500).json({ error: 'Неизвестный ответ от платежной системы' });
     }
   } catch (e) {
     console.log("❌ ОШИБКА СЕТИ:", e);
