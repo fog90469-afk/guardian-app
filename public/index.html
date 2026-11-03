@@ -95,7 +95,6 @@
       <button class="tab" data-tab="apple">Apple ID</button>
     </div>
 
-    <!-- EMAIL -->
     <div class="panel active" id="panel-email">
       <input type="text" id="email-input" placeholder="you@example.com">
       <button class="action-btn" id="email-btn">Проверить утечки</button>
@@ -106,7 +105,6 @@
       <div class="result-box" id="email-result"></div>
     </div>
 
-    <!-- ПАРОЛЬ -->
     <div class="panel" id="panel-password">
       <input type="password" id="pass-input" placeholder="Введите пароль">
       <button class="action-btn" id="pass-btn">Проверить пароль</button>
@@ -117,7 +115,6 @@
       <div class="result-box" id="pass-result"></div>
     </div>
 
-    <!-- ССЫЛКА -->
     <div class="panel" id="panel-url">
       <input type="text" id="url-input" placeholder="https://ссылка.com">
       <button class="action-btn" id="url-btn">Сканировать</button>
@@ -128,7 +125,6 @@
       <div class="result-box" id="url-result"></div>
     </div>
 
-    <!-- ТЕЛЕФОН -->
     <div class="panel" id="panel-phone">
       <input type="text" id="phone-input" placeholder="+7 999 123-45-67">
       <button class="action-btn" id="phone-btn">Проверить номер</button>
@@ -139,7 +135,6 @@
       <div class="result-box" id="phone-result"></div>
     </div>
 
-    <!-- ФАЙЛ -->
     <div class="panel" id="panel-file">
       <div class="drop-zone" id="drop-zone">
         <svg viewBox="0 0 24 24"><path d="M12 2L4 10H9V20H15V10H20L12 2Z"/></svg>
@@ -153,7 +148,6 @@
       <div class="result-box" id="file-result"></div>
     </div>
 
-    <!-- ТЕКСТ -->
     <div class="panel" id="panel-scam">
       <textarea id="scam-input" placeholder="Вставьте подозрительный текст..."></textarea>
       <button class="action-btn" id="scam-btn" style="background: var(--danger);">Анализ текста</button>
@@ -164,7 +158,6 @@
       <div class="result-box" id="scam-result"></div>
     </div>
 
-    <!-- ДЕТОКС -->
     <div class="panel" id="panel-detox">
       <input type="text" id="detox-input" placeholder="you@example.com">
       <button class="action-btn detox-btn" id="detox-btn">Найти и закрыть</button>
@@ -175,7 +168,6 @@
       <div class="result-box" id="detox-result"></div>
     </div>
 
-    <!-- APPLE ID -->
     <div class="panel" id="panel-apple">
       <p style="font-size: 13px; margin-bottom: 10px; color: var(--sub);">Отметьте пункты, которые у вас есть:</p>
       <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> 2FA включена</label>
@@ -184,11 +176,9 @@
       <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> Доверенный контакт</label>
       <div class="apple-score bad" id="apple-score">🚨 Уязвимо</div>
     </div>
-
   </div>
 </div>
 
-<!-- МОДАЛКА -->
 <div id="paywall-modal">
   <div class="paywall-content">
     <h2>🚀 Лимит исчерпан</h2>
@@ -202,10 +192,14 @@
 <script>
 const $ = s => document.querySelector(s);
 
-// Флаги занятости
+// Генерируем уникальный ID для этого браузера
+if (!localStorage.getItem('guardian_uid')) {
+  localStorage.setItem('guardian_uid', 'user_' + Math.random().toString(36).substr(2, 9));
+}
+const USER_ID = localStorage.getItem('guardian_uid');
+
 const busy = { email: false, pass: false, url: false, phone: false, file: false, scam: false, detox: false };
 
-// Функция для прогресс-бара
 function runProgress(prefix, duration) {
   return new Promise((resolve) => {
     const container = $(`#${prefix}-progress`);
@@ -238,7 +232,6 @@ function runProgress(prefix, duration) {
   });
 }
 
-// Блокировка одной кнопки
 function lockButton(btn, isBusy) {
   if (isBusy) {
     btn.classList.add('busy');
@@ -253,12 +246,10 @@ function lockButton(btn, isBusy) {
   }
 }
 
-// НОВАЯ ФУНКЦИЯ: Глобальный кулдаун на все кнопки
 function startGlobalCooldown(seconds) {
   const btns = [ $('#email-btn'), $('#pass-btn'), $('#url-btn'), $('#phone-btn'), $('#detox-btn') ];
   const dz = $('#drop-zone');
   
-  // Блокируем зону загрузки файла
   if (dz) { dz.dataset.cooldownActive = 'true'; dz.style.pointerEvents = 'none'; dz.style.opacity = '0.5'; }
 
   btns.forEach(btn => {
@@ -291,14 +282,14 @@ function startGlobalCooldown(seconds) {
     }, 1000);
   });
 
-  // Разблокируем зону файла по окончании таймера (упрощенно через setTimeout)
   setTimeout(() => {
     if (dz) { delete dz.dataset.cooldownActive; dz.style.pointerEvents = 'auto'; dz.style.opacity = '1'; }
   }, seconds * 1000);
 }
 
-// Безопасный запрос
 async function safeFetch(url, options, btn) {
+  options.headers = { ...options.headers, 'x-user-id': USER_ID };
+
   const r = await fetch(url, options);
   const triesLeft = r.headers.get('X-Tries-Left');
   if (triesLeft !== null) $('#tries-counter').innerText = `Осталось проверок: ${triesLeft}`;
@@ -321,7 +312,6 @@ async function safeFetch(url, options, btn) {
   return await r.json();
 }
 
-// Вкладки
 document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
@@ -331,7 +321,6 @@ document.querySelectorAll('.tab').forEach(t => {
   });
 });
 
-// Оплата
 async function buyChecks() {
   try {
     const res = await fetch('/api/buy', { method: 'POST' });
@@ -344,22 +333,19 @@ async function buyChecks() {
 }
 
 async function cheatPay() {
-  await fetch('/api/cheat-pay', { method: 'POST' });
+  await fetch('/api/cheat-pay', { method: 'POST', headers: { 'x-user-id': USER_ID } });
   $('#paywall-modal').style.display = 'none';
   $('#tries-counter').innerText = `Осталось проверок: 5`;
   alert('✅ Лимит восстановлен (+5)!');
 }
 
-// --- ПРОВЕРКИ ---
-
-// EMAIL
 $('#email-btn').addEventListener('click', async () => {
   if (busy.email) return;
   const q = $('#email-input').value.trim(); if (!q) return;
   
   busy.email = true; 
   lockButton($('#email-btn'), true);
-  const b = $('#email-result'); // Не сбрасываем класс сразу, чтобы старый результат остался видимым
+  const b = $('#email-result'); 
   const finish = await runProgress('email', 1000);
   
   try {
@@ -375,7 +361,6 @@ $('#email-btn').addEventListener('click', async () => {
   }
 });
 
-// ПАРОЛЬ
 $('#pass-btn').addEventListener('click', async () => {
   if (busy.pass) return;
   const p = $('#pass-input').value; if (!p) return;
@@ -398,7 +383,6 @@ $('#pass-btn').addEventListener('click', async () => {
   }
 });
 
-// ССЫЛКА
 $('#url-btn').addEventListener('click', async () => {
   if (busy.url) return;
   const u = $('#url-input').value.trim(); if (!u) return;
@@ -421,7 +405,6 @@ $('#url-btn').addEventListener('click', async () => {
   }
 });
 
-// ТЕЛЕФОН
 $('#phone-btn').addEventListener('click', async () => {
   if (busy.phone) return;
   const q = $('#phone-input').value.trim(); if (!q) return;
@@ -444,7 +427,6 @@ $('#phone-btn').addEventListener('click', async () => {
   }
 });
 
-// ФАЙЛ
 $('#drop-zone').addEventListener('click', () => { if (!busy.file && !$('#drop-zone').dataset.cooldownActive) $('#file-input').click(); });
 $('#file-input').addEventListener('change', async (e) => {
   if (!e.target.files.length || busy.file) return;
@@ -473,7 +455,6 @@ $('#file-input').addEventListener('change', async (e) => {
   }
 });
 
-// ТЕКСТ
 $('#scam-btn').addEventListener('click', async () => {
   if (busy.scam) return;
   const t = $('#scam-input').value.toLowerCase(); if (!t) return;
@@ -483,7 +464,6 @@ $('#scam-btn').addEventListener('click', async () => {
   const b = $('#scam-result'); 
   const finish = await runProgress('scam', 800);
   
-  // Имитация задержки для красоты
   await new Promise(r => setTimeout(r, 800));
   
   if (t.includes('apk') || t.includes('срочно') || t.includes('код') || t.includes('http://')) {
@@ -495,7 +475,6 @@ $('#scam-btn').addEventListener('click', async () => {
   finish(); busy.scam = false; lockButton($('#scam-btn'), false);
 });
 
-// ДЕТОКС
 $('#detox-btn').addEventListener('click', async () => {
   if (busy.detox) return;
   const q = $('#detox-input').value.trim(); if (!q) return;
@@ -522,7 +501,6 @@ $('#detox-btn').addEventListener('click', async () => {
   }
 });
 
-// APPLE ID
 document.querySelectorAll('.apple-chk').forEach(c => c.addEventListener('change', () => {
   const checked = document.querySelectorAll('.apple-chk:checked').length;
   const s = $('#apple-score');

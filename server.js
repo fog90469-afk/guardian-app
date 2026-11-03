@@ -7,27 +7,28 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Безопасность
+// Безопасность и CORS (разрешаем кастомный заголовок x-user-id)
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors());
+app.use(cors({
+  exposedHeaders: ['X-Tries-Left'],
+  allowedHeaders: ['Content-Type', 'x-user-id']
+}));
 app.use(express.json());
-
-// --- ИСПРАВЛЕНИЕ ДЛЯ RENDER ---
-// Ищем папку public относительно корня проекта, а не текущего файла
 app.use(express.static(path.resolve(process.cwd(), 'public')));
 
-// --- СИСТЕМА ЛИМИТОВ + 4-МИНУТНЫЙ КУЛДАУН ---
+// --- СИСТЕМА ЛИМИТОВ + КУЛДАУН (ПО ID БРАУЗЕРА) ---
 const userLimits = new Map();
 const FREE_TRIES = 3;
-const COOLDOWN_MS = 4 * 60 * 1000; // 4 минуты
+const COOLDOWN_MS = 4 * 60 * 1000; 
 
 function checkLimit(req, res, next) {
-  const ip = req.ip || req.connection.remoteAddress || 'unknown';
-  let user = userLimits.get(ip);
+  // Берем ID из заголовка, который пришлет браузер. Если нет — fallback на IP.
+  const userKey = req.headers['x-user-id'] || req.ip || 'unknown';
+  let user = userLimits.get(userKey);
 
   if (!user) {
     user = { tries: FREE_TRIES, lastCheck: 0 };
-    userLimits.set(ip, user);
+    userLimits.set(userKey, user);
   }
 
   const now = Date.now();
@@ -63,8 +64,8 @@ app.use('/api/files', checkLimit, require('./routes/files'));
 
 // Тестовая кнопка
 app.post('/api/cheat-pay', (req, res) => {
-  const ip = req.ip || req.connection.remoteAddress || 'unknown';
-  let user = userLimits.get(ip);
+  const userKey = req.headers['x-user-id'] || req.ip || 'unknown';
+  let user = userLimits.get(userKey);
   if (user) { user.tries += 5; }
   res.json({ ok: true });
 });
