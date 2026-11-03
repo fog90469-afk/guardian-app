@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🛡️ Guardian</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #05070a; --card: rgba(15, 23, 42, 0.6); --border: rgba(255, 255, 255, 0.08);
+    --text: #f8fafc; --sub: #94a3b8; --primary: #3b82f6;
+    --danger: #ef4444; --success: #10b981; --warning: #f59e0b; --detox: #a78bfa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+  body {
+    background-color: var(--bg);
+    background-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+                      radial-gradient(circle at 85% 30%, rgba(239, 68, 68, 0.1) 0%, transparent 50%);
+    color: var(--text); min-height: 100vh; display: flex; justify-content: center; padding: 20px;
+  }
+  .container { width: 100%; max-width: 650px; margin-top: 5vh; }
+  .header { text-align: center; margin-bottom: 20px; }
+  .header h1 { font-size: 28px; font-weight: 700; }
+  .tries-badge { display: inline-block; background: rgba(59,130,246,0.15); color: #60a5fa; padding: 6px 16px; border-radius: 30px; font-size: 13px; font-weight: 600; margin-top: 10px; border: 1px solid rgba(59,130,246,0.3); }
+  
+  .card { background: var(--card); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); }
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 14px; flex-wrap: wrap; }
+  .tab { flex: 1; padding: 8px 4px; border: none; background: transparent; color: var(--sub); border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 600; transition: 0.2s; min-width: 60px; }
+  .tab.active { background: rgba(255,255,255,0.1); color: #fff; }
+  .tab[data-tab="detox"].active { background: var(--detox); color: #fff; }
+  
+  .panel { display: none; } .panel.active { display: block; animation: fade 0.3s; }
+  input, textarea { width: 100%; padding: 14px; border: 1px solid var(--border); background: rgba(0,0,0,0.4); color: #fff; border-radius: 12px; margin-bottom: 10px; font-size: 15px; outline: none; font-family: inherit; }
+  input:focus, textarea:focus { border-color: var(--primary); }
+  
+  button.action-btn { 
+    width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 600; 
+    cursor: pointer; transition: 0.3s; background: var(--primary); color: #fff; 
+  }
+  button.action-btn.busy { background: #1e3a5f; color: #60a5fa; cursor: not-allowed; pointer-events: none; }
+  button.action-btn.detox-btn.busy { background: #4c1d95; color: #c4b5fd; }
+
+  .progress-container { margin-top: 15px; display: none; flex-direction: column; gap: 8px; }
+  .progress-container.active { display: flex; }
+  .progress-info { display: flex; justify-content: space-between; font-size: 12px; color: var(--sub); font-weight: 600; }
+  .progress-bar-bg { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; width: 0%; background: var(--primary); border-radius: 10px; transition: width 0.15s linear; }
+
+  .result-box { margin-top: 15px; padding: 15px; border-radius: 12px; display: none; line-height: 1.5; font-size: 14px; border: 1px solid transparent; }
+  .result-box.show { display: block; }
+  .danger { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #fca5a5; }
+  .safe { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.3); color: #6ee7b7; }
+  .warning { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.3); color: #fcd34d; }
+  .error { background: rgba(255,255,255,0.05); border-color: #6b7280; color: var(--sub); }
+
+  .drop-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 30px 20px; text-align: center; cursor: pointer; transition: 0.2s; background: rgba(0,0,0,0.2); }
+  .drop-zone:hover { border-color: var(--primary); background: rgba(59,130,246,0.1); }
+  .drop-zone svg { width: 40px; height: 40px; fill: var(--primary); margin-bottom: 10px; }
+
+  .detox-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 10px; margin-bottom: 8px; }
+  .detox-link { color: var(--detox); font-size: 12px; text-decoration: none; background: rgba(167,139,250,0.1); padding: 6px 12px; border-radius: 6px; font-weight: 600; }
+  
+  .apple-score { margin-top: 15px; padding: 16px; border-radius: 12px; text-align: center; font-weight: 700; }
+  .apple-score.bad { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid var(--danger); }
+  .apple-score.good { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid var(--success); }
+
+  #paywall-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); }
+  .paywall-content { background: linear-gradient(145deg, #0f172a, #1e293b); padding: 40px 30px; border-radius: 24px; text-align: center; max-width: 400px; width: 100%; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.9); }
+  .paywall-content h2 { margin-bottom: 10px; color: #fff; font-size: 24px; }
+  .paywall-content p { margin-bottom: 25px; color: var(--sub); font-size: 15px; }
+  .btn-buy { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 12px; }
+  .btn-close { width: 100%; padding: 14px; background: rgba(255,255,255,0.05); color: var(--sub); border: none; border-radius: 12px; cursor: pointer; }
+  .btn-cheat { margin-top: 20px; font-size: 11px; color: #475569; background: transparent; border: none; cursor: pointer; text-decoration: underline; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🛡️ Guardian</h1>
+    <div class="tries-badge" id="tries-counter">Осталось проверок: ...</div>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" data-tab="email">Email</button>
+      <button class="tab" data-tab="password">Пароль</button>
+      <button class="tab" data-tab="url">Ссылка</button>
+      <button class="tab" data-tab="phone">Телефон</button>
+      <button class="tab" data-tab="file">Файл</button>
+      <button class="tab" data-tab="scam">Текст</button>
+      <button class="tab" data-tab="detox" style="color: var(--detox);">Детокс</button>
+      <button class="tab" data-tab="apple">Apple ID</button>
+    </div>
+
+    <!-- EMAIL -->
+    <div class="panel active" id="panel-email">
+      <input type="text" id="email-input" placeholder="you@example.com">
+      <button class="action-btn" id="email-btn">Проверить утечки</button>
+      <div class="progress-container" id="email-progress">
+        <div class="progress-info"><span id="email-progress-text">Поиск...</span><span id="email-progress-percent">0%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="email-progress-fill"></div></div>
+      </div>
+      <div class="result-box" id="email-result"></div>
+    </div>
+
+    <!-- ПАРОЛЬ -->
+    <div class="panel" id="panel-password">
+      <input type="password" id="pass-input" placeholder="Введите пароль">
+      <button class="action-btn" id="pass-btn">Проверить пароль</button>
+      <div class="progress-container" id="pass-progress">
+        <div class="progress-info"><span id="pass-progress-text">Анализ...</span><span id="pass-progress-percent">0%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="pass-progress-fill"></div></div>
+      </div>
+      <div class="result-box" id="pass-result"></div>
+    </div>
+
+    <!-- ССЫЛКА -->
+    <div class="panel" id="panel-url">
+      <input type="text" id="url-input" placeholder="https://ссылка.com">
+      <button class="action-btn" id="url-btn">Сканировать</button>
+      <div class="progress-container" id="url-progress">
+        <div class="progress-info"><span id="url-progress-text">VirusTotal...</span><span id="url-progress-percent">0%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="url-progress-fill" style="background: var(--warning);"></div></div>
+      </div>
+      <div class="result-box" id="url-result"></div>
+    </div>
+
+    <!-- ТЕЛЕФОН -->
+    <div class="panel" id="panel-phone">
+      <input type="text" id="phone-input" placeholder="+7 999 123-45-67">
+      <button class="action-btn" id="phone-btn">Проверить номер</button>
+      <div class="progress-container" id="phone-progress">
+        <div class="progress-info"><span id="phone-progress-text">Поиск...</span><span id="phone-progress-percent">0%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="phone-progress-fill"></div></div>
+      </div>
+      <div class="result-box" id="phone-result"></div>
+    </div>
+
+    <!-- ФАЙЛ -->
+    <div class="panel" id="panel-file">
+      <div class="drop-zone" id="drop-zone">
+        <svg viewBox="0 0 24 24"><path d="M12 2L4 10H9V20H15V10H20L12 2Z"/></svg>
+        <p>Нажмите, чтобы выбрать файл</p>
+        <input type="file" id="file-input" style="display: none;">
+      </div>
+      <div class="progress-container" id="file-progress">
+        <div class="progress-info"><span id="file-progress-text">Считывание...</span><span id="file-progress-percent">0%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="file-progress-fill" style="background: #8b5cf6;"></div></div>
+      </div>
+      <div class="result-box" id="file-result"></div>
+    </div>
+
+    <!-- ТЕКСТ -->
+    <div class="panel" id="panel-scam">
+      <textarea id="scam-input" placeholder="Вставьте подозрительный текст..."></textarea>
+      <button class="action-btn" id="scam-btn" style="background: var(--danger);">Анализ текста</button>
+      <div class="progress-container" id="scam-progress">
+        <div class="progress-info"><span id="scam-progress-text">Поиск...</span><span id="scam-progress-percent">0%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="scam-progress-fill" style="background: var(--danger);"></div></div>
+      </div>
+      <div class="result-box" id="scam-result"></div>
+    </div>
+
+    <!-- ДЕТОКС -->
+    <div class="panel" id="panel-detox">
+      <input type="text" id="detox-input" placeholder="you@example.com">
+      <button class="action-btn detox-btn" id="detox-btn">Найти и закрыть</button>
+      <div class="progress-container" id="detox-progress">
+        <div class="progress-info"><span id="detox-progress-text">Поиск...</span><span id="detox-progress-percent">0%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="detox-progress-fill" style="background: var(--detox);"></div></div>
+      </div>
+      <div class="result-box" id="detox-result"></div>
+    </div>
+
+    <!-- APPLE ID -->
+    <div class="panel" id="panel-apple">
+      <p style="font-size: 13px; margin-bottom: 10px; color: var(--sub);">Отметьте пункты, которые у вас есть:</p>
+      <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> 2FA включена</label>
+      <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> Доверенный номер</label>
+      <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> Ключ восстановления</label>
+      <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> Доверенный контакт</label>
+      <div class="apple-score bad" id="apple-score">🚨 Уязвимо</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- МОДАЛКА -->
+<div id="paywall-modal">
+  <div class="paywall-content">
+    <h2>🚀 Лимит исчерпан</h2>
+    <p>Вы использовали 3 бесплатные проверки.</p>
+    <button class="btn-buy" onclick="buyChecks()">💳 Купить 5 запросов за 249 ₽</button>
+    <button class="btn-close" onclick="document.getElementById('paywall-modal').style.display='none'">Закрыть</button>
+    <button class="btn-cheat" onclick="cheatPay()">[Тест] Симулировать оплату</button>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+
+// Флаги занятости
+const busy = { email: false, pass: false, url: false, phone: false, file: false, scam: false, detox: false };
+
+// Функция для прогресс-бара
+function runProgress(prefix, duration) {
+  return new Promise((resolve) => {
+    const container = $(`#${prefix}-progress`);
+    const fill = $(`#${prefix}-progress-fill`);
+    const percent = $(`#${prefix}-progress-percent`);
+    const text = $(`#${prefix}-progress-text`);
+    
+    if (!container) return resolve(() => {});
+
+    container.classList.add('active');
+    fill.style.width = '0%';
+    percent.innerText = '0%';
+    text.innerText = 'Анализ...';
+
+    let width = 0;
+    const interval = setInterval(() => {
+      width += 5;
+      if (width > 90) width = 90;
+      fill.style.width = width + '%';
+      percent.innerText = width + '%';
+    }, duration / 20);
+
+    resolve(() => {
+      clearInterval(interval);
+      fill.style.width = '100%';
+      percent.innerText = '100%';
+      text.innerText = 'Готово!';
+      setTimeout(() => { container.classList.remove('active'); }, 300);
+    });
+  });
+}
+
+// Блокировка одной кнопки
+function lockButton(btn, isBusy) {
+  if (isBusy) {
+    btn.classList.add('busy');
+    btn.disabled = true;
+    btn.dataset.originalText = btn.innerText;
+    btn.innerText = '⏳ Обработка...';
+  } else {
+    if (btn.dataset.cooldownActive) return;
+    btn.classList.remove('busy');
+    btn.disabled = false;
+    btn.innerText = btn.dataset.originalText || btn.innerText;
+  }
+}
+
+// НОВАЯ ФУНКЦИЯ: Глобальный кулдаун на все кнопки
+function startGlobalCooldown(seconds) {
+  const btns = [ $('#email-btn'), $('#pass-btn'), $('#url-btn'), $('#phone-btn'), $('#detox-btn') ];
+  const dz = $('#drop-zone');
+  
+  // Блокируем зону загрузки файла
+  if (dz) { dz.dataset.cooldownActive = 'true'; dz.style.pointerEvents = 'none'; dz.style.opacity = '0.5'; }
+
+  btns.forEach(btn => {
+    if (!btn || btn.dataset.cooldownActive) return;
+    
+    btn.dataset.cooldownActive = 'true';
+    btn.disabled = true;
+    btn.classList.add('busy');
+    if (!btn.dataset.originalText) btn.dataset.originalText = btn.innerText;
+    
+    let remaining = seconds;
+    const update = () => {
+      const m = Math.floor(remaining / 60);
+      const s = remaining % 60;
+      btn.innerText = `⏳ Подождите ${m}:${s.toString().padStart(2, '0')}`;
+    };
+    update();
+
+    const interval = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(interval);
+        btn.disabled = false;
+        btn.classList.remove('busy');
+        btn.innerText = btn.dataset.originalText;
+        delete btn.dataset.cooldownActive;
+      } else {
+        update();
+      }
+    }, 1000);
+  });
+
+  // Разблокируем зону файла по окончании таймера (упрощенно через setTimeout)
+  setTimeout(() => {
+    if (dz) { delete dz.dataset.cooldownActive; dz.style.pointerEvents = 'auto'; dz.style.opacity = '1'; }
+  }, seconds * 1000);
+}
+
+// Безопасный запрос
+async function safeFetch(url, options, btn) {
+  const r = await fetch(url, options);
+  const triesLeft = r.headers.get('X-Tries-Left');
+  if (triesLeft !== null) $('#tries-counter').innerText = `Осталось проверок: ${triesLeft}`;
+
+  if (r.status === 429) {
+    const err = await r.json();
+    startGlobalCooldown(err.waitSec || 240);
+    throw new Error('COOLDOWN');
+  }
+
+  if (r.status === 403) {
+    $('#paywall-modal').style.display = 'flex';
+    throw new Error('LIMIT');
+  }
+  
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.error || 'Ошибка сервера');
+  }
+  return await r.json();
+}
+
+// Вкладки
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    $('#panel-' + t.dataset.tab).classList.add('active');
+  });
+});
+
+// Оплата
+async function buyChecks() {
+  try {
+    const res = await fetch('/api/buy', { method: 'POST' });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else alert('Ошибка: ' + (data.error || 'Неизвестно'));
+  } catch (e) {
+    alert('Сервер не отвечает.');
+  }
+}
+
+async function cheatPay() {
+  await fetch('/api/cheat-pay', { method: 'POST' });
+  $('#paywall-modal').style.display = 'none';
+  $('#tries-counter').innerText = `Осталось проверок: 5`;
+  alert('✅ Лимит восстановлен (+5)!');
+}
+
+// --- ПРОВЕРКИ ---
+
+// EMAIL
+$('#email-btn').addEventListener('click', async () => {
+  if (busy.email) return;
+  const q = $('#email-input').value.trim(); if (!q) return;
+  
+  busy.email = true; 
+  lockButton($('#email-btn'), true);
+  const b = $('#email-result'); // Не сбрасываем класс сразу, чтобы старый результат остался видимым
+  const finish = await runProgress('email', 1000);
+  
+  try {
+    const d = await safeFetch('/api/leaks', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ query: q }) }, $('#email-btn'));
+    b.className = 'result-box show ' + (d.found ? 'danger' : 'safe');
+    b.innerHTML = d.found ? `🚨 Найдено в ${d.count} утечках!` : `✅ Утечек не найдено.`;
+  } catch (e) {
+    b.className = 'result-box show ' + (e.message === 'COOLDOWN' ? 'warning' : 'error');
+    b.innerHTML = e.message === 'COOLDOWN' ? `⚠️ Вы недавно делали проверку. Подождите, пока пройдет таймер на кнопках.` : `⚠️ ${e.message}`;
+  } finally {
+    finish(); busy.email = false;
+    lockButton($('#email-btn'), false);
+  }
+});
+
+// ПАРОЛЬ
+$('#pass-btn').addEventListener('click', async () => {
+  if (busy.pass) return;
+  const p = $('#pass-input').value; if (!p) return;
+  
+  busy.pass = true;
+  lockButton($('#pass-btn'), true);
+  const b = $('#pass-result'); 
+  const finish = await runProgress('pass', 800);
+  
+  try {
+    const d = await safeFetch('/api/passwords', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ password: p }) }, $('#pass-btn'));
+    b.className = 'result-box show ' + (d.count > 0 ? 'danger' : 'safe');
+    b.innerHTML = d.count > 0 ? `🚨 Пароль слит ${d.count} раз!` : `✅ Пароль надежен.`;
+  } catch (e) {
+    b.className = 'result-box show ' + (e.message === 'COOLDOWN' ? 'warning' : 'error');
+    b.innerHTML = e.message === 'COOLDOWN' ? `⚠️ Вы недавно делали проверку. Подождите, пока пройдет таймер на кнопках.` : `⚠️ ${e.message}`;
+  } finally {
+    finish(); busy.pass = false;
+    lockButton($('#pass-btn'), false);
+  }
+});
+
+// ССЫЛКА
+$('#url-btn').addEventListener('click', async () => {
+  if (busy.url) return;
+  const u = $('#url-input').value.trim(); if (!u) return;
+  
+  busy.url = true;
+  lockButton($('#url-btn'), true);
+  const b = $('#url-result'); 
+  const finish = await runProgress('url', 2000);
+  
+  try {
+    const d = await safeFetch('/api/urls', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ url: u }) }, $('#url-btn'));
+    b.className = 'result-box show ' + (d.verdict === 'danger' ? 'danger' : 'safe');
+    b.innerHTML = d.verdict === 'danger' ? `🚨 ОПАСНАЯ ССЫЛКА!` : `✅ Ссылка безопасна.`;
+  } catch (e) {
+    b.className = 'result-box show ' + (e.message === 'COOLDOWN' ? 'warning' : 'error');
+    b.innerHTML = e.message === 'COOLDOWN' ? `⚠️ Вы недавно делали проверку. Подождите, пока пройдет таймер на кнопках.` : `⚠️ ${e.message}`;
+  } finally {
+    finish(); busy.url = false;
+    lockButton($('#url-btn'), false);
+  }
+});
+
+// ТЕЛЕФОН
+$('#phone-btn').addEventListener('click', async () => {
+  if (busy.phone) return;
+  const q = $('#phone-input').value.trim(); if (!q) return;
+  
+  busy.phone = true;
+  lockButton($('#phone-btn'), true);
+  const b = $('#phone-result'); 
+  const finish = await runProgress('phone', 1000);
+  
+  try {
+    const d = await safeFetch('/api/leaks', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ query: q }) }, $('#phone-btn'));
+    b.className = 'result-box show ' + (d.found ? 'danger' : 'safe');
+    b.innerHTML = d.found ? `🚨 Номер найден в утечках!` : `✅ Утечек нет.`;
+  } catch (e) {
+    b.className = 'result-box show ' + (e.message === 'COOLDOWN' ? 'warning' : 'error');
+    b.innerHTML = e.message === 'COOLDOWN' ? `⚠️ Вы недавно делали проверку. Подождите, пока пройдет таймер на кнопках.` : `⚠️ ${e.message}`;
+  } finally {
+    finish(); busy.phone = false;
+    lockButton($('#phone-btn'), false);
+  }
+});
+
+// ФАЙЛ
+$('#drop-zone').addEventListener('click', () => { if (!busy.file && !$('#drop-zone').dataset.cooldownActive) $('#file-input').click(); });
+$('#file-input').addEventListener('change', async (e) => {
+  if (!e.target.files.length || busy.file) return;
+  
+  busy.file = true;
+  const dz = $('#drop-zone'); dz.style.pointerEvents = 'none'; dz.style.opacity = '0.5';
+  const b = $('#file-result'); 
+  const finish = await runProgress('file', 1500);
+  
+  try {
+    const buffer = await e.target.files[0].arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashHex = Array.from(new Uint8Array(hashBuffer)).map(x => x.toString(16).padStart(2, '0')).join('');
+    
+    const d = await safeFetch('/api/files', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ hash: hashHex }) }, dz);
+    
+    if (d.status === 'not_found') { b.className = 'result-box show warning'; b.innerHTML = `⚠️ Файл неизвестен антивирусам.`; }
+    else { b.className = 'result-box show ' + (d.verdict === 'danger' ? 'danger' : 'safe'); b.innerHTML = d.verdict === 'danger' ? `🚨 ВИРУС!` : `✅ Файл чист.`; }
+  } catch (e) {
+    b.className = 'result-box show ' + (e.message === 'COOLDOWN' ? 'warning' : 'error');
+    b.innerHTML = e.message === 'COOLDOWN' ? `⚠️ Вы недавно делали проверку. Подождите, пока пройдет таймер на кнопках.` : `⚠️ ${e.message}`;
+  } finally {
+    finish(); busy.file = false; 
+    if (!dz.dataset.cooldownActive) { dz.style.pointerEvents = 'auto'; dz.style.opacity = '1'; }
+    e.target.value = ''; 
+  }
+});
+
+// ТЕКСТ
+$('#scam-btn').addEventListener('click', async () => {
+  if (busy.scam) return;
+  const t = $('#scam-input').value.toLowerCase(); if (!t) return;
+  
+  busy.scam = true;
+  lockButton($('#scam-btn'), true);
+  const b = $('#scam-result'); 
+  const finish = await runProgress('scam', 800);
+  
+  // Имитация задержки для красоты
+  await new Promise(r => setTimeout(r, 800));
+  
+  if (t.includes('apk') || t.includes('срочно') || t.includes('код') || t.includes('http://')) {
+    b.className = 'result-box show danger'; b.innerHTML = `🚨 ОПАСНЫЙ ТЕКСТ! Не переходите по ссылкам.`;
+  } else {
+    b.className = 'result-box show safe'; b.innerHTML = `✅ Явных угроз нет.`;
+  }
+  
+  finish(); busy.scam = false; lockButton($('#scam-btn'), false);
+});
+
+// ДЕТОКС
+$('#detox-btn').addEventListener('click', async () => {
+  if (busy.detox) return;
+  const q = $('#detox-input').value.trim(); if (!q) return;
+  
+  busy.detox = true;
+  lockButton($('#detox-btn'), true);
+  const b = $('#detox-result'); 
+  const finish = await runProgress('detox', 1200);
+  
+  try {
+    const d = await safeFetch('/api/leaks', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ query: q }) }, $('#detox-btn'));
+    if (d.found && d.sources) {
+      const uniq = [...new Set(d.sources.map(s => s.name || s.domain || 'Сервис'))];
+      let html = `<b>Найдено в ${uniq.length} сервисах:</b><br><br>`;
+      uniq.forEach(s => { html += `<div class="detox-item"><span>${s}</span><a href="https://www.google.com/search?q=how+to+delete+account+${s}" target="_blank" class="detox-link">Удалить</a></div>`; });
+      b.className = 'result-box show'; b.innerHTML = html;
+    } else { b.className = 'result-box show safe'; b.innerHTML = `✅ Данные не найдены.`; }
+  } catch (e) {
+    b.className = 'result-box show ' + (e.message === 'COOLDOWN' ? 'warning' : 'error');
+    b.innerHTML = e.message === 'COOLDOWN' ? `⚠️ Вы недавно делали проверку. Подождите, пока пройдет таймер на кнопках.` : `⚠️ ${e.message}`;
+  } finally {
+    finish(); busy.detox = false;
+    lockButton($('#detox-btn'), false);
+  }
+});
+
+// APPLE ID
+document.querySelectorAll('.apple-chk').forEach(c => c.addEventListener('change', () => {
+  const checked = document.querySelectorAll('.apple-chk:checked').length;
+  const s = $('#apple-score');
+  if (checked < 3) { s.className = 'apple-score bad'; s.innerHTML = `🚨 Защита слабая (${checked}/4)`; }
+  else { s.className = 'apple-score good'; s.innerHTML = `✅ Отлично (${checked}/4)`; }
+}));
+</script>
+</body>
+</html>
