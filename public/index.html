@@ -71,7 +71,6 @@
   .paywall-content p { margin-bottom: 25px; color: var(--sub); font-size: 15px; }
   .btn-buy { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 12px; }
   .btn-close { width: 100%; padding: 14px; background: rgba(255,255,255,0.05); color: var(--sub); border: none; border-radius: 12px; cursor: pointer; }
-  .btn-cheat { margin-top: 20px; font-size: 11px; color: #475569; background: transparent; border: none; cursor: pointer; text-decoration: underline; }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 </style>
 </head>
@@ -185,7 +184,6 @@
     <p>Вы использовали 3 бесплатные проверки.</p>
     <button class="btn-buy" onclick="buyChecks()">💳 Купить 5 запросов за 249 ₽</button>
     <button class="btn-close" onclick="document.getElementById('paywall-modal').style.display='none'">Закрыть</button>
-    <button class="btn-cheat" onclick="cheatPay()">[Тест] Симулировать оплату</button>
   </div>
 </div>
 
@@ -325,18 +323,17 @@ async function buyChecks() {
   try {
     const res = await fetch('/api/buy', { method: 'POST' });
     const data = await res.json();
-    if (data.url) window.location.href = data.url;
-    else alert('Ошибка: ' + (data.error || 'Неизвестно'));
+    
+    if (data.url) {
+      window.location.href = data.url;
+    } else if (data.error) {
+      alert('Ошибка оплаты: ' + data.error);
+    } else {
+      alert('Ошибка: Сервер не вернул ссылку на оплату. Проверьте настройки кассы.');
+    }
   } catch (e) {
     alert('Сервер не отвечает.');
   }
-}
-
-async function cheatPay() {
-  await fetch('/api/cheat-pay', { method: 'POST', headers: { 'x-user-id': USER_ID } });
-  $('#paywall-modal').style.display = 'none';
-  $('#tries-counter').innerText = `Осталось проверок: 5`;
-  alert('✅ Лимит восстановлен (+5)!');
 }
 
 $('#email-btn').addEventListener('click', async () => {
