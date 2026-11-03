@@ -7,15 +7,19 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Безопасность
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+
+// --- ИСПРАВЛЕНИЕ ДЛЯ RENDER ---
+// Ищем папку public относительно корня проекта, а не текущего файла
+app.use(express.static(path.resolve(process.cwd(), 'public')));
 
 // --- СИСТЕМА ЛИМИТОВ + 4-МИНУТНЫЙ КУЛДАУН ---
 const userLimits = new Map();
 const FREE_TRIES = 3;
-const COOLDOWN_MS = 4 * 60 * 1000; // 4 минуты (для теста можешь поставить 10 * 1000)
+const COOLDOWN_MS = 4 * 60 * 1000; // 4 минуты
 
 function checkLimit(req, res, next) {
   const ip = req.ip || req.connection.remoteAddress || 'unknown';
