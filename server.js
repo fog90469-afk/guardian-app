@@ -16,13 +16,12 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static(path.resolve(process.cwd(), 'public')));
 
-// --- СИСТЕМА ЛИМИТОВ + КУЛДАУН (ПО ID БРАУЗЕРА) ---
+// --- СИСТЕМА ЛИМИТОВ + КУЛДАУН (ТОЛЬКО КОГДА ЛИМИТ ИСЧЕРПАН) ---
 const userLimits = new Map();
 const FREE_TRIES = 3;
-const COOLDOWN_MS = 4 * 60 * 1000; 
+const COOLDOWN_MS = 4 * 60 * 1000; // 4 минуты
 
 function checkLimit(req, res, next) {
-  // Берем ID из заголовка, который пришлет браузер. Если нет — fallback на IP.
   const userKey = req.headers['x-user-id'] || req.ip || 'unknown';
   let user = userLimits.get(userKey);
 
@@ -31,10 +30,18 @@ function checkLimit(req, res, next) {
     userLimits.set(userKey, user);
   }
 
+  // ЕСЛИ ПОПЫТКИ ЕСТЬ - ПРОПУСКАЕМ СРАЗУ, БЕЗ КУЛДАУНА
+  if (user.tries > 0) {
+    user.tries -= 1;
+    user.lastCheck = Date.now();
+    res.setHeader('X-Tries-Left', user.tries);
+    return next();
+  }
+
+  // ЕСЛИ ПОПЫТОК НЕТ - ВКЛЮЧАЕМ КУЛДАУН И ПОКАЗЫВАЕМ ОКНО ОПЛАТЫ
   const now = Date.now();
   const timeSinceLast = now - user.lastCheck;
 
-  // Проверка кулдауна
   if (user.lastCheck > 0 && timeSinceLast < COOLDOWN_MS) {
     const waitSec = Math.ceil((COOLDOWN_MS - timeSinceLast) / 1000);
     return res.status(429).json({ 
@@ -44,16 +51,8 @@ function checkLimit(req, res, next) {
     });
   }
 
-  // Проверка лимита
-  if (user.tries <= 0) {
-    return res.status(403).json({ error: 'LIMIT_REACHED' });
-  }
-
-  user.tries -= 1;
-  user.lastCheck = now;
-  
-  res.setHeader('X-Tries-Left', user.tries);
-  next();
+  // Если кулдаун прошел, но попыток все равно нет - выдаем ошибку лимита (окно оплаты)
+  return res.status(403).json({ error: 'LIMIT_REACHED' });
 }
 
 // Маршруты
@@ -62,7 +61,7 @@ app.use('/api/passwords', checkLimit, require('./routes/passwords'));
 app.use('/api/urls', checkLimit, require('./routes/urls'));
 app.use('/api/files', checkLimit, require('./routes/files'));
 
-// Тестовая кнопка
+// Тестовая кнопка (восстановить лимит)
 app.post('/api/cheat-pay', (req, res) => {
   const userKey = req.headers['x-user-id'] || req.ip || 'unknown';
   let user = userLimits.get(userKey);
