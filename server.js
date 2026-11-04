@@ -8,10 +8,8 @@ const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ИСПРАВЛЕНО: Доверяем прокси Render (иначе rate-limit не видит реальные IP)
 app.set('trust proxy', 1);
 
-// УСИЛЕННЫЙ CSP
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -28,17 +26,14 @@ app.use(helmet({
   },
 }));
 
-// CORS
 app.use(cors({
   origin: ['https://guardian-app-3sy1.onrender.com', 'https://guardian-app-r3y1.onrender.com'],
   exposedHeaders: ['X-Tries-Left'],
   allowedHeaders: ['Content-Type', 'x-user-id']
 }));
 
-// Лимит на размер JSON
 app.use(express.json({ limit: '10kb' })); 
 
-// Rate Limit (глобальный)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
   max: 100, 
@@ -46,7 +41,6 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// Отдельный строгий лимит для создания платежей (чтобы не спамили счетами)
 const payLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, 
   max: 5, 
@@ -56,26 +50,36 @@ app.use('/api/buy', payLimiter);
 
 app.use(express.static(path.resolve(process.cwd(), 'public')));
 
-// --- СИСТЕМА ЛИМИТОВ (Map + LocalStorage ID) ---
+// --- СИСТЕМА ЛИМИТОВ ---
 const userLimits = new Map();
 const FREE_TRIES = 3;
 
 function checkLimit(req, res, next) {
   const userKey = req.headers['x-user-id'] || req.ip || 'unknown';
   let user = userLimits.get(userKey);
-  if (!user) { user = { tries: FREE_TRIES }; userLimits.set(userKey, user); }
+  if (!user) { user = { tries: FREE_TRIES, lastActive: Date.now() }; userLimits.set(userKey, user); }
   if (user.tries <= 0) { return res.status(403).json({ error: 'LIMIT_REACHED' }); }
   user.tries -= 1;
+  user.lastActive = Date.now(); // Обновляем время активности
   res.setHeader('X-Tries-Left', user.tries);
   next();
 }
+
+// ИСПРАВЛЕНО: Автоочистка старых записей (раз в сутки)
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, user] of userLimits.entries()) {
+    if (now - user.lastActive > 24 * 60 * 60 * 1000) {
+      userLimits.delete(key);
+    }
+  }
+}, 60 * 60 * 1000); // Проверка каждый час
 
 app.use('/api/leaks', checkLimit, require('./routes/leaks'));
 app.use('/api/passwords', checkLimit, require('./routes/passwords'));
 app.use('/api/urls', checkLimit, require('./routes/urls'));
 app.use('/api/files', checkLimit, require('./routes/files'));
 
-// CRYSTALPAY
 app.post('/api/buy', async (req, res) => {
   try {
     const response = await fetch('https://api.crystalpay.io/v2/invoice/create/', {

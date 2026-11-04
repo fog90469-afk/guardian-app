@@ -6,17 +6,20 @@ router.post('/', async (req, res) => {
   if (!query) return res.status(400).json({ error: 'Введите данные' });
 
   try {
-    // ИСПРАВЛЕНО: Добавлен таймаут 5 секунд и проверка r.ok
     const r = await fetch('https://leakcheck.io/api/public?check=' + encodeURIComponent(query), {
       headers: { accept: 'application/json' },
-      signal: AbortSignal.timeout(5000) // Если API не ответит за 5 сек, выкинет ошибку
+      signal: AbortSignal.timeout(5000)
     });
     
-    if (!r.ok) {
-      throw new Error(`API вернул статус ${r.status}`);
-    }
+    if (!r.ok) throw new Error(`API вернул статус ${r.status}`);
 
-    const data = await r.json().catch(() => ({}));
+    // ИСПРАВЛЕНО: Если JSON битый, выбрасываем ошибку, а не пустой объект
+    let data;
+    try {
+      data = await r.json();
+    } catch (parseError) {
+      throw new Error('Некорректный ответ от API (не JSON)');
+    }
 
     if (data && data.success) {
       return res.json({ found: true, count: data.found || 0, sources: data.sources || [], fields: data.fields || [] });

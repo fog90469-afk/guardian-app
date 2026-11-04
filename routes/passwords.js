@@ -11,7 +11,11 @@ router.post('/', async (req, res) => {
   const suffix = hash.slice(5);
 
   try {
-    const r = await fetch('https://api.pwnedpasswords.com/range/' + prefix);
+    const r = await fetch('https://api.pwnedpasswords.com/range/' + prefix, {
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!r.ok) throw new Error(`HIBP статус ${r.status}`);
+
     const text = await r.text();
     let count = 0;
     for (const line of text.split('\n')) {
@@ -20,8 +24,8 @@ router.post('/', async (req, res) => {
     }
     return res.json({ count });
   } catch (e) {
-    return res.status(500).json({ error: 'Ошибка API' });
+    console.error('HIBP Error:', e.message);
+    return res.status(500).json({ error: 'Сервис проверки паролей недоступен.' });
   }
 });
-
 module.exports = router;
