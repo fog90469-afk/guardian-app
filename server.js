@@ -7,11 +7,27 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(helmet({ contentSecurityPolicy: false }));
+// ИСПРАВЛЕНИЕ 1: Включаем строгий CSP (Content Security Policy)
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"], 
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+}));
+
+// ИСПРАВЛЕНИЕ 2: Закрываем CORS для посторонних доменов
 app.use(cors({
+  origin: 'https://guardian-app-3sy1.onrender.com',
   exposedHeaders: ['X-Tries-Left'],
   allowedHeaders: ['Content-Type', 'x-user-id']
 }));
+
 app.use(express.json());
 app.use(express.static(path.resolve(process.cwd(), 'public')));
 
@@ -37,12 +53,13 @@ function checkLimit(req, res, next) {
   next();
 }
 
+// Маршруты
 app.use('/api/leaks', checkLimit, require('./routes/leaks'));
 app.use('/api/passwords', checkLimit, require('./routes/passwords'));
 app.use('/api/urls', checkLimit, require('./routes/urls'));
 app.use('/api/files', checkLimit, require('./routes/files'));
 
-// --- CRYSTALPAY (ИСПРАВЛЕНО) ---
+// --- CRYSTALPAY ---
 app.post('/api/buy', async (req, res) => {
   try {
     const response = await fetch('https://api.crystalpay.io/v2/invoice/create/', {
@@ -57,23 +74,10 @@ app.post('/api/buy', async (req, res) => {
         description: 'Покупка 5 проверок в Guardian'
       })
     });
-
     const data = await response.json();
-    console.log('Ответ от CrystalPay:', data); // Пригодится для отладки
-
-    // Если пришла ссылка на оплату
-    if (data.url) {
-      return res.json({ url: data.url });
-    } 
-    
-    // Если пришла ошибка, отдаем её текст на клиент
-    if (data.errors && data.errors.length > 0) {
-      return res.status(500).json({ error: data.errors.join(', ') });
-    }
-
-    // Если ничего не подошло
-    return res.status(500).json({ error: 'Платежная система не вернула ссылку на оплату' });
-
+    if (data.url) return res.json({ url: data.url });
+    if (data.errors && data.errors.length > 0) return res.status(500).json({ error: data.errors.join(', ') });
+    return res.status(500).json({ error: 'Платежная система не вернула ссылку' });
   } catch (e) {
     console.error('Ошибка сети при оплате:', e);
     res.status(500).json({ error: 'Ошибка сети' });
@@ -81,5 +85,5 @@ app.post('/api/buy', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Сервер запущен: http://localhost:${PORT}`);
+  console.log(`✅ Сервер запущен в безопасном режиме: http://localhost:${PORT}`);
 });

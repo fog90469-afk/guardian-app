@@ -183,12 +183,13 @@
     </div>
   </div>
 
-  <!-- Подвал -->
   <footer>
-    <div style="margin-bottom: 10px;">
+    <div style="margin-bottom: 10px; line-height: 1.8;">
       <a href="/services.html">Услуги и цены</a> | 
       <a href="/terms.html">Пользовательское соглашение</a> | 
-      <a href="/privacy.html">Политика конфиденциальности</a> | <a href="/refund.html">Возврат средств</a> | <a href="/contacts.html">Контакты</a>
+      <a href="/privacy.html">Политика конфиденциальности</a> | 
+      <a href="/refund.html">Возврат средств</a> | 
+      <a href="/contacts.html">Контакты</a>
     </div>
     <div>© 2026 Guardian. Все права защищены.</div>
   </footer>
@@ -208,6 +209,13 @@ const $ = s => document.querySelector(s);
 if (!localStorage.getItem('guardian_uid')) { localStorage.setItem('guardian_uid', 'user_' + Math.random().toString(36).substr(2, 9)); }
 const USER_ID = localStorage.getItem('guardian_uid');
 const busy = { email: false, pass: false, url: false, phone: false, file: false, scam: false, detox: false };
+
+// ИСПРАВЛЕНИЕ 3: Функция для экранирования HTML-тегов (защита от XSS)
+function escapeHTML(str) {
+  return String(str).replace(/[&<>'"]/g, 
+    tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+  );
+}
 
 function runProgress(prefix, duration) {
   return new Promise((resolve) => {
@@ -254,14 +262,14 @@ async function buyChecks() {
   } catch (e) { alert('Сервер не отвечает.'); }
 }
 
-// Кнопки
 $('#email-btn').addEventListener('click', async () => {
   if (busy.email) return; const q = $('#email-input').value.trim(); if (!q) return;
   busy.email = true; lockButton($('#email-btn'), true); const b = $('#email-result'); const finish = await runProgress('email', 1000);
   try {
     const d = await safeFetch('/api/leaks', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ query: q }) }, $('#email-btn'));
-    b.className = 'result-box show ' + (d.found ? 'danger' : 'safe'); b.innerHTML = d.found ? `🚨 Найдено в ${d.count} утечках!` : `✅ Утечек не найдено.`;
-  } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.innerHTML = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
+    b.className = 'result-box show ' + (d.found ? 'danger' : 'safe'); 
+    b.textContent = d.found ? `🚨 Найдено в ${d.count} утечках!` : `✅ Утечек не найдено.`;
+  } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
   finally { finish(); busy.email = false; lockButton($('#email-btn'), false); }
 });
 
@@ -270,8 +278,9 @@ $('#pass-btn').addEventListener('click', async () => {
   busy.pass = true; lockButton($('#pass-btn'), true); const b = $('#pass-result'); const finish = await runProgress('pass', 800);
   try {
     const d = await safeFetch('/api/passwords', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ password: p }) }, $('#pass-btn'));
-    b.className = 'result-box show ' + (d.count > 0 ? 'danger' : 'safe'); b.innerHTML = d.count > 0 ? `🚨 Пароль слит ${d.count} раз!` : `✅ Пароль надежен.`;
-  } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.innerHTML = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
+    b.className = 'result-box show ' + (d.count > 0 ? 'danger' : 'safe'); 
+    b.textContent = d.count > 0 ? `🚨 Пароль слит ${d.count} раз!` : `✅ Пароль надежен.`;
+  } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
   finally { finish(); busy.pass = false; lockButton($('#pass-btn'), false); }
 });
 
@@ -280,8 +289,9 @@ $('#url-btn').addEventListener('click', async () => {
   busy.url = true; lockButton($('#url-btn'), true); const b = $('#url-result'); const finish = await runProgress('url', 2000);
   try {
     const d = await safeFetch('/api/urls', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ url: u }) }, $('#url-btn'));
-    b.className = 'result-box show ' + (d.verdict === 'danger' ? 'danger' : 'safe'); b.innerHTML = d.verdict === 'danger' ? `🚨 ОПАСНАЯ ССЫЛКА!` : `✅ Ссылка безопасна.`;
-  } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.innerHTML = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
+    b.className = 'result-box show ' + (d.verdict === 'danger' ? 'danger' : 'safe'); 
+    b.textContent = d.verdict === 'danger' ? `🚨 ОПАСНАЯ ССЫЛКА!` : `✅ Ссылка безопасна.`;
+  } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
   finally { finish(); busy.url = false; lockButton($('#url-btn'), false); }
 });
 
@@ -290,8 +300,9 @@ $('#phone-btn').addEventListener('click', async () => {
   busy.phone = true; lockButton($('#phone-btn'), true); const b = $('#phone-result'); const finish = await runProgress('phone', 1000);
   try {
     const d = await safeFetch('/api/leaks', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ query: q }) }, $('#phone-btn'));
-    b.className = 'result-box show ' + (d.found ? 'danger' : 'safe'); b.innerHTML = d.found ? `🚨 Номер найден в утечках!` : `✅ Утечек нет.`;
-  } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.innerHTML = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
+    b.className = 'result-box show ' + (d.found ? 'danger' : 'safe'); 
+    b.textContent = d.found ? `🚨 Номер найден в утечках!` : `✅ Утечек нет.`;
+  } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
   finally { finish(); busy.phone = false; lockButton($('#phone-btn'), false); }
 });
 
@@ -302,9 +313,9 @@ $('#file-input').addEventListener('change', async (e) => {
   try {
     const buffer = await e.target.files[0].arrayBuffer(); const hashBuffer = await crypto.subtle.digest('SHA-256', buffer); const hashHex = Array.from(new Uint8Array(hashBuffer)).map(x => x.toString(16).padStart(2, '0')).join('');
     const d = await safeFetch('/api/files', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ hash: hashHex }) }, dz);
-    if (d.status === 'not_found') { b.className = 'result-box show warning'; b.innerHTML = `⚠️ Файл неизвестен антивирусам.`; }
-    else { b.className = 'result-box show ' + (d.verdict === 'danger' ? 'danger' : 'safe'); b.innerHTML = d.verdict === 'danger' ? `🚨 ВИРУС!` : `✅ Файл чист.`; }
-  } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.innerHTML = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
+    if (d.status === 'not_found') { b.className = 'result-box show warning'; b.textContent = `⚠️ Файл неизвестен антивирусам.`; }
+    else { b.className = 'result-box show ' + (d.verdict === 'danger' ? 'danger' : 'safe'); b.textContent = d.verdict === 'danger' ? `🚨 ВИРУС!` : `✅ Файл чист.`; }
+  } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
   finally { finish(); busy.file = false; if (!dz.dataset.cooldownActive) { dz.style.pointerEvents = 'auto'; dz.style.opacity = '1'; } e.target.value = ''; }
 });
 
@@ -312,8 +323,8 @@ $('#scam-btn').addEventListener('click', async () => {
   if (busy.scam) return; const t = $('#scam-input').value.toLowerCase(); if (!t) return;
   busy.scam = true; lockButton($('#scam-btn'), true); const b = $('#scam-result'); const finish = await runProgress('scam', 800);
   await new Promise(r => setTimeout(r, 800));
-  if (t.includes('apk') || t.includes('срочно') || t.includes('код') || t.includes('http://')) { b.className = 'result-box show danger'; b.innerHTML = `🚨 ОПАСНЫЙ ТЕКСТ! Не переходите по ссылкам.`; } 
-  else { b.className = 'result-box show safe'; b.innerHTML = `✅ Явных угроз нет.`; }
+  if (t.includes('apk') || t.includes('срочно') || t.includes('код') || t.includes('http://')) { b.className = 'result-box show danger'; b.textContent = `🚨 ОПАСНЫЙ ТЕКСТ! Не переходите по ссылкам.`; } 
+  else { b.className = 'result-box show safe'; b.textContent = `✅ Явных угроз нет.`; }
   finish(); busy.scam = false; lockButton($('#scam-btn'), false);
 });
 
@@ -325,16 +336,21 @@ $('#detox-btn').addEventListener('click', async () => {
     if (d.found && d.sources) {
       const uniq = [...new Set(d.sources.map(s => s.name || s.domain || 'Сервис'))];
       let html = `<b>Найдено в ${uniq.length} сервисах:</b><br><br>`;
-      uniq.forEach(s => { html += `<div class="detox-item"><span>${s}</span><a href="https://www.google.com/search?q=how+to+delete+account+${s}" target="_blank" class="detox-link">Удалить</a></div>`; });
-      b.className = 'result-box show'; b.innerHTML = html;
-    } else { b.className = 'result-box show safe'; b.innerHTML = `✅ Данные не найдены.`; }
-  } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.innerHTML = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
+      // Применяем escapeHTML к названиям сервисов для защиты от XSS
+      uniq.forEach(s => { 
+        const safeName = escapeHTML(s);
+        const safeQuery = encodeURIComponent(s);
+        html += `<div class="detox-item"><span>${safeName}</span><a href="https://www.google.com/search?q=how+to+delete+account+${safeQuery}" target="_blank" class="detox-link">Удалить</a></div>`; 
+      });
+      b.className = 'result-box show'; b.innerHTML = html; // Здесь innerHTML оставляем, так как мы строим список
+    } else { b.className = 'result-box show safe'; b.textContent = `✅ Данные не найдены.`; }
+  } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
   finally { finish(); busy.detox = false; lockButton($('#detox-btn'), false); }
 });
 
 document.querySelectorAll('.apple-chk').forEach(c => c.addEventListener('change', () => {
   const checked = document.querySelectorAll('.apple-chk:checked').length; const s = $('#apple-score');
-  if (checked < 3) { s.className = 'apple-score bad'; s.innerHTML = `🚨 Защита слабая (${checked}/4)`; } else { s.className = 'apple-score good'; s.innerHTML = `✅ Отлично (${checked}/4)`; }
+  if (checked < 3) { s.className = 'apple-score bad'; s.textContent = `🚨 Защита слабая (${checked}/4)`; } else { s.className = 'apple-score good'; s.textContent = `✅ Отлично (${checked}/4)`; }
 }));
 </script>
 </body>
