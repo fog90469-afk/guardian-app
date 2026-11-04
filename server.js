@@ -77,12 +77,7 @@ function checkLimit(req, res, next) {
   next();
 }
 
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, user] of userLimits.entries()) {
-    if (now - user.lastActive > 24 * 60 * 60 * 1000) userLimits.delete(key);
-  }
-}, 60 * 60 * 1000);
+// Автоочистка удалена: 3 бесплатные проверки даются один раз навсегда.
 
 app.use('/api/leaks', checkLimit, require('./routes/leaks'));
 app.use('/api/passwords', checkLimit, require('./routes/passwords'));
