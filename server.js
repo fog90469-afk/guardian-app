@@ -30,14 +30,17 @@ app.use(helmet({
 app.use(cors({
   origin: ['https://guardian-app-3sy1.onrender.com', 'https://guardian-app-r3y1.onrender.com'],
   exposedHeaders: ['X-Tries-Left'],
-  allowedHeaders: ['Content-Type', 'x-user-id', 'x-user-token', 'x-is-premium']
+  allowedHeaders: ['Content-Type', 'x-user-id', 'x-user-token']
 }));
 
 app.use(express.json({ limit: '10kb' }));
+
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use('/api', limiter);
+
 const payLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10 });
 app.use('/api/buy', payLimiter);
+
 app.use(express.static(path.resolve(process.cwd(), 'public')));
 
 const userLimits = new Map();
@@ -54,13 +57,10 @@ app.get('/api/get-token', (req, res) => {
 function checkLimit(req, res, next) {
   const userKey = req.headers['x-user-id'];
   const userToken = req.headers['x-user-token'];
-  const isPremium = req.headers['x-is-premium'] === 'true';
 
   if (!userKey || !userToken) return res.status(403).json({ error: 'Нет токена' });
   const expectedToken = crypto.createHmac('sha256', SECRET_KEY).update(userKey).digest('hex');
   if (userToken !== expectedToken) return res.status(403).json({ error: 'Недействительный токен' });
-
-  if (isPremium) return next();
 
   if (userLimits.size >= MAX_USERS_IN_MAP && !userLimits.has(userKey)) {
     userLimits.delete(userLimits.keys().next().value);
@@ -88,21 +88,21 @@ app.use('/api/leaks', checkLimit, require('./routes/leaks'));
 app.use('/api/passwords', checkLimit, require('./routes/passwords'));
 app.use('/api/urls', checkLimit, require('./routes/urls'));
 app.use('/api/files', checkLimit, require('./routes/files'));
-app.use('/api/osint', checkLimit, require('./routes/osint'));
 
 app.post('/api/lava-webhook', (req, res) => { res.status(200).send('OK'); });
 
 app.post('/api/buy', async (req, res) => {
   try {
-    const amount = req.body.amount || 249;
-    const description = req.body.description || 'Покупка 5 проверок в Guardian';
     const response = await fetch('https://api.crystalpay.io/v2/invoice/create/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         auth_login: process.env.CRYSTAL_LOGIN,
         auth_secret: process.env.CRYSTAL_SECRET,
-        amount, type: 'purchase', lifetime: 60, description
+        amount: 249,
+        type: 'purchase',
+        lifetime: 60,
+        description: 'Покупка 5 проверок в Guardian'
       }),
       signal: AbortSignal.timeout(10000)
     });
