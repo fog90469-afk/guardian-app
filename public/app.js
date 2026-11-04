@@ -211,3 +211,13 @@ document.querySelectorAll('.apple-chk').forEach(c => c.addEventListener('change'
   const checked = document.querySelectorAll('.apple-chk:checked').length; const s = $('#apple-score');
   if (checked < 3) { s.className = 'apple-score bad'; s.textContent = `🚨 Защита слабая (${checked}/4)`; } else { s.className = 'apple-score good'; s.textContent = `✅ Отлично (${checked}/4)`; }
 }));
+// Функция доната (пока ведет на страницу оплаты, где можно ввести сумму)
+async function donate() {
+  alert("Спасибо за поддержку! Сейчас мы перенаправим вас на страницу оплаты. Вы можете указать любую сумму.");
+  try {
+    const res = await fetch('/api/buy', { method: 'POST' });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else alert('Ошибка создания счета: ' + (data.error || 'Неизвестно'));
+  } catch (e) { alert('Сервер не отвечает.'); }
+}
