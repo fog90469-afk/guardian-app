@@ -68,14 +68,7 @@ document.querySelectorAll('.tab').forEach(t => {
   });
 });
 
-async function buyChecks() {
-  try {
-    const res = await fetch('/api/buy', { method: 'POST' });
-    const data = await res.json();
-    if (data.url) window.location.href = data.url;
-    else alert('Ошибка оплаты: ' + (data.error || 'Неизвестно'));
-  } catch (e) { alert('Сервер не отвечает.'); }
-}
+
 
 // EMAIL
 $('#email-btn').addEventListener('click', async () => {
@@ -89,7 +82,7 @@ $('#email-btn').addEventListener('click', async () => {
     if (d.found) {
       b.innerHTML = `<span class="result-title">🚨 Найдено в ${d.count} утечках!</span>
         <p>Купите глубокий анализ, чтобы узнать, <b>какие именно данные</b> утекли и из каких сервисов.</p>
-        <button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать глубокий анализ (249 ₽)</button>`;
+        <button class="btn-unlock" onclick="buyDeep()">🔓 Разблокировать анализ (150 ₽)</button>`;
     } else { b.textContent = `✅ Утечек не найдено.`; }
   } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
   finally { finish(); busy.email = false; lockButton($('#email-btn'), false); }
@@ -107,7 +100,7 @@ $('#pass-btn').addEventListener('click', async () => {
     if (d.count > 0) {
       b.innerHTML = `<span class="result-title">🚨 Пароль слит ${d.count} раз!</span>
         <p>Купите глубокий анализ, чтобы узнать, на каких именно сайтах произошла утечка.</p>
-        <button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать глубокий анализ (249 ₽)</button>`;
+        <button class="btn-unlock" onclick="buyDeep()">🔓 Разблокировать анализ (150 ₽)</button>`;
     } else { b.textContent = `✅ Пароль надежен.`; }
   } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
   finally { finish(); busy.pass = false; lockButton($('#pass-btn'), false); }
@@ -125,7 +118,7 @@ $('#url-btn').addEventListener('click', async () => {
     if (d.verdict === 'danger') {
       b.innerHTML = `<span class="result-title">🚨 ОПАСНАЯ ССЫЛКА!</span>
         <p>Купите глубокий анализ, чтобы узнать, на что нацелена эта ссылка (кража паролей, вирус или скам).</p>
-        <button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать глубокий анализ (249 ₽)</button>`;
+        <button class="btn-unlock" onclick="buyDeep()">🔓 Разблокировать анализ (150 ₽)</button>`;
     } else { b.textContent = `✅ Ссылка безопасна.`; }
   } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
   finally { finish(); busy.url = false; lockButton($('#url-btn'), false); }
@@ -143,7 +136,7 @@ $('#phone-btn').addEventListener('click', async () => {
     if (d.found) {
       b.innerHTML = `<span class="result-title">🚨 Номер найден в утечках!</span>
         <p>Купите глубокий анализ, чтобы узнать, где именно.</p>
-        <button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать глубокий анализ (249 ₽)</button>`;
+        <button class="btn-unlock" onclick="buyDeep()">🔓 Разблокировать анализ (150 ₽)</button>`;
     } else { b.textContent = `✅ Утечек нет.`; }
   } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
   finally { finish(); busy.phone = false; lockButton($('#phone-btn'), false); }
@@ -164,7 +157,7 @@ $('#file-input').addEventListener('change', async (e) => {
       b.className = 'result-box show danger';
       b.innerHTML = `<span class="result-title">🚨 ВИРУС!</span>
         <p>Купите глубокий анализ, чтобы узнать, какую именно угрозу несет этот файл.</p>
-        <button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать глубокий анализ (249 ₽)</button>`;
+        <button class="btn-unlock" onclick="buyDeep()">🔓 Разблокировать анализ (150 ₽)</button>`;
     } else { b.className = 'result-box show safe'; b.textContent = `✅ Файл чист.`; }
   } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
   finally { finish(); busy.file = false; if (!dz.dataset.cooldownActive) { dz.style.pointerEvents = 'auto'; dz.style.opacity = '1'; } e.target.value = ''; }
@@ -180,7 +173,7 @@ $('#scam-btn').addEventListener('click', async () => {
   
   if (t.includes('apk') || t.includes('срочно') || t.includes('код') || t.includes('http://')) { 
     b.className = 'result-box show danger'; 
-    b.innerHTML = `<span class="result-title">🚨 ОПАСНЫЙ ТЕКСТ!</span><p>Купите глубокий анализ, чтобы понять, как именно вас пытаются обмануть.</p><button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать (249 ₽)</button>`;
+    b.innerHTML = `<span class="result-title">🚨 ОПАСНЫЙ ТЕКСТ!</span><p>Купите глубокий анализ, чтобы понять, как именно вас пытаются обмануть.</p><button class="btn-unlock" onclick="buyDeep()">🔓 Разблокировать (150 ₽)</button>`;
   } else { b.className = 'result-box show safe'; b.textContent = `✅ Явных угроз нет.`; }
   finish(); busy.scam = false; lockButton($('#scam-btn'), false);
 });
@@ -198,7 +191,7 @@ $('#detox-btn').addEventListener('click', async () => {
       b.className = 'result-box show';
       b.innerHTML = `<b>Найдено в ${uniq.length} сервисах!</b><br><br>
         <p>Купите глубокий анализ, чтобы увидеть список сервисов и ссылки на удаление.</p>
-        <button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать список (249 ₽)</button>`;
+        <button class="btn-unlock" onclick="buyDeep()">🔓 Разблокировать список (150 ₽)</button>`;
     } else { b.className = 'result-box show safe'; b.textContent = `✅ Данные не найдены.`; }
   } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
   finally { finish(); busy.detox = false; lockButton($('#detox-btn'), false); }
@@ -209,3 +202,30 @@ document.querySelectorAll('.apple-chk').forEach(c => c.addEventListener('change'
   const checked = document.querySelectorAll('.apple-chk:checked').length; const s = $('#apple-score');
   if (checked < 3) { s.className = 'apple-score bad'; s.textContent = `🚨 Защита слабая (${checked}/4)`; } else { s.className = 'apple-score good'; s.textContent = `✅ Отлично (${checked}/4)`; }
 }));
+// Купить 5 запросов за 249
+async function buyChecks() {
+  try {
+    const res = await fetch('/api/buy', { 
+      method: 'POST', 
+      headers: {'content-type': 'application/json'}, 
+      body: JSON.stringify({ amount: 249, description: 'Покупка 5 запросов в Guardian' }) 
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else alert('Ошибка оплаты: ' + (data.error || 'Неизвестно'));
+  } catch (e) { alert('Сервер не отвечает.'); }
+}
+
+// Купить глубокий анализ за 150
+async function buyDeep() {
+  try {
+    const res = await fetch('/api/buy', { 
+      method: 'POST', 
+      headers: {'content-type': 'application/json'}, 
+      body: JSON.stringify({ amount: 150, description: 'Глубокий анализ в Guardian' }) 
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else alert('Ошибка оплаты: ' + (data.error || 'Неизвестно'));
+  } catch (e) { alert('Сервер не отвечает.'); }
+}
