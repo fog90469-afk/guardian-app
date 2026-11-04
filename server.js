@@ -17,7 +17,7 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'"], 
-      styleSrc: ["'self'", "https://fonts.googleapis.com"], // Инлайн стили оставили (в index.html их много, но это не так критично для XSS, как скрипты)
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Инлайн стили оставили (в index.html их много, но это не так критично для XSS, как скрипты)
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       connectSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
