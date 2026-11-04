@@ -3,12 +3,15 @@ const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
-const rateLimit = require('express-rate-limit'); // ВОЗВРАЩАЕМ ЛИМИТЫ
+const rateLimit = require('express-rate-limit'); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ИСПРАВЛЕНО: Усиленный CSP
+// ИСПРАВЛЕНО: Доверяем прокси Render (иначе rate-limit не видит реальные IP)
+app.set('trust proxy', 1);
+
+// УСИЛЕННЫЙ CSP
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -18,24 +21,24 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       connectSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
-      objectSrc: ["'none'"], // Запрет Flash/Java апплетов
-      baseUri: ["'self'"],   // Запрет подмены базового URL
-      frameAncestors: ["'none'"], // Защита от кликджекинга
+      objectSrc: ["'none'"], 
+      baseUri: ["'self'"],   
+      frameAncestors: ["'none'"], 
     },
   },
 }));
 
-// ИСПРАВЛЕНО: Указываем оба возможных домена на случай смены
+// CORS
 app.use(cors({
   origin: ['https://guardian-app-3sy1.onrender.com', 'https://guardian-app-r3y1.onrender.com'],
   exposedHeaders: ['X-Tries-Left'],
   allowedHeaders: ['Content-Type', 'x-user-id']
 }));
 
-// ИСПРАВЛЕНО: Лимит на размер входящего JSON
+// Лимит на размер JSON
 app.use(express.json({ limit: '10kb' })); 
 
-// ИСПРАВЛЕНО: Rate Limit для защиты от DDoS
+// Rate Limit (глобальный)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, 
   max: 100, 
@@ -43,9 +46,17 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
+// Отдельный строгий лимит для создания платежей (чтобы не спамили счетами)
+const payLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, 
+  max: 5, 
+  message: { error: 'Слишком много попыток оплаты. Попробуйте позже.' }
+});
+app.use('/api/buy', payLimiter);
+
 app.use(express.static(path.resolve(process.cwd(), 'public')));
 
-// --- СИСТЕМА ЛИМИТОВ ---
+// --- СИСТЕМА ЛИМИТОВ (Map + LocalStorage ID) ---
 const userLimits = new Map();
 const FREE_TRIES = 3;
 
@@ -64,6 +75,7 @@ app.use('/api/passwords', checkLimit, require('./routes/passwords'));
 app.use('/api/urls', checkLimit, require('./routes/urls'));
 app.use('/api/files', checkLimit, require('./routes/files'));
 
+// CRYSTALPAY
 app.post('/api/buy', async (req, res) => {
   try {
     const response = await fetch('https://api.crystalpay.io/v2/invoice/create/', {
