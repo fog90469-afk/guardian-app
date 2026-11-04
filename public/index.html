@@ -340,7 +340,7 @@ $('#detox-btn').addEventListener('click', async () => {
       uniq.forEach(s => { 
         const safeName = escapeHTML(s);
         const safeQuery = encodeURIComponent(s);
-        html += `<div class="detox-item"><span>${safeName}</span><a href="https://www.google.com/search?q=how+to+delete+account+${safeQuery}" target="_blank" class="detox-link">Удалить</a></div>`; 
+        html += `<div class="detox-item"><span>${safeName}</span><a href="https://www.google.com/search?q=how+to+delete+account+${safeQuery}" target="_blank" rel="noopener noreferrer" class="detox-link">Удалить</a></div>`; 
       });
       b.className = 'result-box show'; b.innerHTML = html; // Здесь innerHTML оставляем, так как мы строим список
     } else { b.className = 'result-box show safe'; b.textContent = `✅ Данные не найдены.`; }

@@ -3,11 +3,12 @@ const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit'); // ВОЗВРАЩАЕМ ЛИМИТЫ
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ИСПРАВЛЕНИЕ 1: Включаем строгий CSP (Content Security Policy)
+// ИСПРАВЛЕНО: Усиленный CSP
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -17,18 +18,31 @@ app.use(helmet({
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       connectSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
+      objectSrc: ["'none'"], // Запрет Flash/Java апплетов
+      baseUri: ["'self'"],   // Запрет подмены базового URL
+      frameAncestors: ["'none'"], // Защита от кликджекинга
     },
   },
 }));
 
-// ИСПРАВЛЕНИЕ 2: Закрываем CORS для посторонних доменов
+// ИСПРАВЛЕНО: Указываем оба возможных домена на случай смены
 app.use(cors({
-  origin: 'https://guardian-app-3sy1.onrender.com',
+  origin: ['https://guardian-app-3sy1.onrender.com', 'https://guardian-app-r3y1.onrender.com'],
   exposedHeaders: ['X-Tries-Left'],
   allowedHeaders: ['Content-Type', 'x-user-id']
 }));
 
-app.use(express.json());
+// ИСПРАВЛЕНО: Лимит на размер входящего JSON
+app.use(express.json({ limit: '10kb' })); 
+
+// ИСПРАВЛЕНО: Rate Limit для защиты от DDoS
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, 
+  max: 100, 
+  message: { error: 'Слишком много запросов. Подождите 15 минут.' }
+});
+app.use('/api', limiter);
+
 app.use(express.static(path.resolve(process.cwd(), 'public')));
 
 // --- СИСТЕМА ЛИМИТОВ ---
@@ -38,28 +52,18 @@ const FREE_TRIES = 3;
 function checkLimit(req, res, next) {
   const userKey = req.headers['x-user-id'] || req.ip || 'unknown';
   let user = userLimits.get(userKey);
-
-  if (!user) {
-    user = { tries: FREE_TRIES };
-    userLimits.set(userKey, user);
-  }
-
-  if (user.tries <= 0) {
-    return res.status(403).json({ error: 'LIMIT_REACHED' });
-  }
-
+  if (!user) { user = { tries: FREE_TRIES }; userLimits.set(userKey, user); }
+  if (user.tries <= 0) { return res.status(403).json({ error: 'LIMIT_REACHED' }); }
   user.tries -= 1;
   res.setHeader('X-Tries-Left', user.tries);
   next();
 }
 
-// Маршруты
 app.use('/api/leaks', checkLimit, require('./routes/leaks'));
 app.use('/api/passwords', checkLimit, require('./routes/passwords'));
 app.use('/api/urls', checkLimit, require('./routes/urls'));
 app.use('/api/files', checkLimit, require('./routes/files'));
 
-// --- CRYSTALPAY ---
 app.post('/api/buy', async (req, res) => {
   try {
     const response = await fetch('https://api.crystalpay.io/v2/invoice/create/', {
