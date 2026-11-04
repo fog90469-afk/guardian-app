@@ -88,7 +88,7 @@ $('#email-btn').addEventListener('click', async () => {
     b.className = 'result-box show ' + (d.found ? 'danger' : 'safe');
     if (d.found) {
       b.innerHTML = `<span class="result-title">🚨 Найдено в ${d.count} утечках!</span>
-        <p>Купите глубокий анализ, чтобы узнать, <b>какие именно данные</b> утекли.</p>
+        <p>Купите глубокий анализ, чтобы узнать, <b>какие именно данные</b> утекли и из каких сервисов.</p>
         <button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать глубокий анализ (249 ₽)</button>`;
     } else { b.textContent = `✅ Утечек не найдено.`; }
   } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
@@ -106,7 +106,7 @@ $('#pass-btn').addEventListener('click', async () => {
     b.className = 'result-box show ' + (d.count > 0 ? 'danger' : 'safe');
     if (d.count > 0) {
       b.innerHTML = `<span class="result-title">🚨 Пароль слит ${d.count} раз!</span>
-        <p>Купите глубокий анализ, чтобы узнать, в каких базах он засветился.</p>
+        <p>Купите глубокий анализ, чтобы узнать, на каких именно сайтах произошла утечка.</p>
         <button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать глубокий анализ (249 ₽)</button>`;
     } else { b.textContent = `✅ Пароль надежен.`; }
   } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
@@ -124,7 +124,7 @@ $('#url-btn').addEventListener('click', async () => {
     b.className = 'result-box show ' + (d.verdict === 'danger' ? 'danger' : 'safe');
     if (d.verdict === 'danger') {
       b.innerHTML = `<span class="result-title">🚨 ОПАСНАЯ ССЫЛКА!</span>
-        <p>Купите глубокий анализ, чтобы узнать, какие антивирусы ее заблокировали.</p>
+        <p>Купите глубокий анализ, чтобы узнать, на что нацелена эта ссылка (кража паролей, вирус или скам).</p>
         <button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать глубокий анализ (249 ₽)</button>`;
     } else { b.textContent = `✅ Ссылка безопасна.`; }
   } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
@@ -163,7 +163,7 @@ $('#file-input').addEventListener('change', async (e) => {
     else if (d.verdict === 'danger') {
       b.className = 'result-box show danger';
       b.innerHTML = `<span class="result-title">🚨 ВИРУС!</span>
-        <p>Купите глубокий анализ, чтобы узнать, какой антивирус его нашел.</p>
+        <p>Купите глубокий анализ, чтобы узнать, какую именно угрозу несет этот файл.</p>
         <button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать глубокий анализ (249 ₽)</button>`;
     } else { b.className = 'result-box show safe'; b.textContent = `✅ Файл чист.`; }
   } catch (e) { b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); b.textContent = e.message === 'LIMIT' ? `` : `⚠️ ${e.message}`; } 
@@ -180,7 +180,7 @@ $('#scam-btn').addEventListener('click', async () => {
   
   if (t.includes('apk') || t.includes('срочно') || t.includes('код') || t.includes('http://')) { 
     b.className = 'result-box show danger'; 
-    b.innerHTML = `<span class="result-title">🚨 ОПАСНЫЙ ТЕКСТ!</span><p>Купите глубокий анализ для деталей.</p><button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать (249 ₽)</button>`;
+    b.innerHTML = `<span class="result-title">🚨 ОПАСНЫЙ ТЕКСТ!</span><p>Купите глубокий анализ, чтобы понять, как именно вас пытаются обмануть.</p><button class="btn-unlock" onclick="buyChecks()">🔓 Разблокировать (249 ₽)</button>`;
   } else { b.className = 'result-box show safe'; b.textContent = `✅ Явных угроз нет.`; }
   finish(); busy.scam = false; lockButton($('#scam-btn'), false);
 });
