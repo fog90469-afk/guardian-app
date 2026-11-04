@@ -4,7 +4,6 @@ const VT_KEY = process.env.VT_API_KEY;
 
 router.post('/', async (req, res) => {
   let { url } = req.body;
-  
   if (typeof url !== 'string' || url.length === 0 || url.length > 2048) {
     return res.status(400).json({ error: 'Некорректная ссылка' });
   }
@@ -26,19 +25,18 @@ router.post('/', async (req, res) => {
       });
       if (!submit.ok) throw new Error('Ошибка отправки в VT');
       const sData = await submit.json();
-      const analysisId = sData.data.id;
-
+      
       for (let i = 0; i < 5; i++) {
         await new Promise(resolve => setTimeout(resolve, 3000));
-        const aRes = await fetch('https://www.virustotal.com/api/v3/analyses/' + analysisId, { 
-          headers: { 'x-apikey': VT_KEY },
-          signal: AbortSignal.timeout(5000)
+        const aRes = await fetch('https://www.virustotal.com/api/v3/analyses/' + sData.data.id, { 
+          headers: { 'x-apikey': VT_KEY }, signal: AbortSignal.timeout(5000)
         });
-        if (!aRes.ok) continue;
-        const aData = await aRes.json();
-        if (aData.data.attributes.status === 'completed') {
-          const stats = aData.data.attributes.stats;
-          return res.json({ verdict: stats.malicious > 0 ? 'danger' : 'safe', stats });
+        if (aRes.ok) {
+          const aData = await aRes.json();
+          if (aData.data.attributes.status === 'completed') {
+            const stats = aData.data.attributes.stats;
+            return res.json({ verdict: stats.malicious > 0 ? 'danger' : 'safe', stats });
+          }
         }
       }
       return res.json({ verdict: 'warning', stats: {} });
@@ -49,8 +47,7 @@ router.post('/', async (req, res) => {
     const stats = data.data.attributes.last_analysis_stats;
     return res.json({ verdict: stats.malicious > 0 ? 'danger' : 'safe', stats });
   } catch (e) {
-    console.error('VT Error:', e.message);
-    return res.status(500).json({ error: 'Ошибка VirusTotal.' });
+    return res.status(500).json({ error: 'Ошибка VirusTotal' });
   }
 });
 module.exports = router;

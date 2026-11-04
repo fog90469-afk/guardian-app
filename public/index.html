@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -73,7 +73,6 @@
   .btn-buy { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 12px; }
   .btn-close { width: 100%; padding: 14px; background: rgba(255,255,255,0.05); color: var(--sub); border: none; border-radius: 12px; cursor: pointer; }
   
-  /* СТИЛИ ДЛЯ ГЛУБОКОГО АНАЛИЗА */
   .blurred { filter: blur(5px); user-select: none; pointer-events: none; }
   .btn-unlock {
     width: 100%; margin-top: 15px; padding: 12px;
@@ -86,18 +85,15 @@
   footer { text-align: center; margin-top: 40px; padding-bottom: 30px; font-size: 13px; color: var(--sub); }
   footer a { color: var(--primary); text-decoration: none; margin: 0 10px; }
   footer a:hover { text-decoration: underline; }
-  
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 </style>
 </head>
 <body>
-
 <div class="container">
   <div class="header">
     <h1>🛡️ Guardian</h1>
     <div class="tries-badge" id="tries-counter">Осталось проверок: ...</div>
   </div>
-
   <div class="card">
     <div class="tabs">
       <button class="tab active" data-tab="email">Email</button>
@@ -109,7 +105,6 @@
       <button class="tab" data-tab="detox" style="color: var(--detox);">Детокс</button>
       <button class="tab" data-tab="apple">Apple ID</button>
     </div>
-
     <div class="panel active" id="panel-email">
       <input type="text" id="email-input" placeholder="you@example.com">
       <button class="action-btn" id="email-btn">Проверить утечки</button>
@@ -119,7 +114,6 @@
       </div>
       <div class="result-box" id="email-result"></div>
     </div>
-
     <div class="panel" id="panel-password">
       <input type="password" id="pass-input" placeholder="Введите пароль">
       <button class="action-btn" id="pass-btn">Проверить пароль</button>
@@ -129,7 +123,6 @@
       </div>
       <div class="result-box" id="pass-result"></div>
     </div>
-
     <div class="panel" id="panel-url">
       <input type="text" id="url-input" placeholder="https://ссылка.com">
       <button class="action-btn" id="url-btn">Сканировать</button>
@@ -139,7 +132,6 @@
       </div>
       <div class="result-box" id="url-result"></div>
     </div>
-
     <div class="panel" id="panel-phone">
       <input type="text" id="phone-input" placeholder="+7 999 123-45-67">
       <button class="action-btn" id="phone-btn">Проверить номер</button>
@@ -149,10 +141,9 @@
       </div>
       <div class="result-box" id="phone-result"></div>
     </div>
-
     <div class="panel" id="panel-file">
       <div class="drop-zone" id="drop-zone">
-        <svg viewBox="0 0 24 24" width="40" height="40"><path d="M12 2L4 10H9V20H15V10H20L12 2Z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2L4 10H9V20H15V10H20L12 2Z"/></svg>
         <p>Нажмите, чтобы выбрать файл</p>
         <input type="file" id="file-input" style="display: none;">
       </div>
@@ -162,7 +153,6 @@
       </div>
       <div class="result-box" id="file-result"></div>
     </div>
-
     <div class="panel" id="panel-scam">
       <textarea id="scam-input" placeholder="Вставьте подозрительный текст..."></textarea>
       <button class="action-btn" id="scam-btn" style="background: var(--danger);">Анализ текста</button>
@@ -172,7 +162,6 @@
       </div>
       <div class="result-box" id="scam-result"></div>
     </div>
-
     <div class="panel" id="panel-detox">
       <input type="text" id="detox-input" placeholder="you@example.com">
       <button class="action-btn detox-btn" id="detox-btn">Найти и закрыть</button>
@@ -182,7 +171,6 @@
       </div>
       <div class="result-box" id="detox-result"></div>
     </div>
-
     <div class="panel" id="panel-apple">
       <p style="font-size: 13px; margin-bottom: 10px; color: var(--sub);">Отметьте пункты, которые у вас есть:</p>
       <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> 2FA включена</label>
@@ -192,7 +180,6 @@
       <div class="apple-score bad" id="apple-score">🚨 Уязвимо</div>
     </div>
   </div>
-
   <footer>
     <div style="margin-bottom: 10px; line-height: 1.8;">
       <a href="/services.html">Услуги и цены</a> | 
@@ -204,17 +191,15 @@
     <div>© 2026 Guardian. Все права защищены.</div>
   </footer>
 </div>
-
 <div id="paywall-modal">
   <div class="paywall-content">
     <h2>🚀 Дневной лимит исчерпан</h2>
     <p>Вы использовали 3 бесплатные проверки на сегодня.<br>Лимит обновится через 24 часа.</p>
     <button class="btn-buy" onclick="buyChecks()">💳 Купить 5 запросов за 249 ₽</button>
     <button class="btn-close" onclick="document.getElementById('paywall-modal').style.display='none'">Закрыть</button>
-    <button class="btn-donate" onclick="donate()" style="width: 100%; padding: 14px; background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; cursor: pointer; margin-top: 10px; font-weight: 600;">☕ Поддержать проект</button>
+    <button class="btn-close" onclick="donate()" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); margin-top: 10px;">☕ Поддержать проект</button>
   </div>
 </div>
-
 <script src="/app.js"></script>
 </body>
 </html>

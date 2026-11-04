@@ -4,14 +4,11 @@ const router = express.Router();
 
 router.post('/', async (req, res) => {
   const { password } = req.body;
-  
-  // ИСПРАВЛЕНО: Проверка типа и длины ДО хеширования
   if (typeof password !== 'string' || password.length === 0 || password.length > 100) {
     return res.status(400).json({ error: 'Некорректный пароль' });
   }
 
   try {
-    // ИСПРАВЛЕНО: Хеширование перенесено ВНУТРЬ try
     const hash = crypto.createHash('sha1').update(password).digest('hex').toUpperCase();
     const prefix = hash.slice(0, 5);
     const suffix = hash.slice(5);
@@ -29,8 +26,7 @@ router.post('/', async (req, res) => {
     }
     return res.json({ count });
   } catch (e) {
-    console.error('HIBP Error:', e.message);
-    return res.status(500).json({ error: 'Сервис проверки паролей недоступен.' });
+    return res.status(500).json({ error: 'Сервис проверки паролей недоступен' });
   }
 });
 module.exports = router;

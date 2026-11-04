@@ -4,20 +4,20 @@ const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const crypto = require('crypto'); // Для подписи ID
+const crypto = require('crypto'); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.set('trust proxy', 1);
 
-// УБРАН unsafe-inline
+// Безопасность (CSP)
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'"], 
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Инлайн стили оставили (в index.html их много, но это не так критично для XSS, как скрипты)
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       connectSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
@@ -28,14 +28,16 @@ app.use(helmet({
   },
 }));
 
+// CORS
 app.use(cors({
   origin: ['https://guardian-app-3sy1.onrender.com', 'https://guardian-app-r3y1.onrender.com'],
-  exposedHeaders: ['X-Tries-Left', 'X-User-Token'],
+  exposedHeaders: ['X-Tries-Left'],
   allowedHeaders: ['Content-Type', 'x-user-id', 'x-user-token']
 }));
 
 app.use(express.json({ limit: '10kb' }));
 
+// Лимиты
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use('/api', limiter);
 
@@ -44,24 +46,34 @@ app.use('/api/buy', payLimiter);
 
 app.use(express.static(path.resolve(process.cwd(), 'public')));
 
-// --- СИСТЕМА ЛИМИТОВ (LRU-КЭШ + ПОДПИСЬ) ---
+// --- СИСТЕМА ЛИМИТОВ ---
 const userLimits = new Map();
 const FREE_TRIES = 3;
 const MAX_USERS_IN_MAP = 50000;
-const SECRET_KEY = process.env.SECRET_KEY || 'super_secret_guardian_key_123'; // Лучше вынести в .env!
+const SECRET_KEY = process.env.SECRET_KEY || 'super_secret_guardian_key_123';
+
+// Выдача токена клиенту
+app.get('/api/get-token', (req, res) => {
+  const userId = req.query.id || 'user_' + crypto.randomBytes(8).toString('hex');
+  const token = crypto.createHmac('sha256', SECRET_KEY).update(userId).digest('hex');
+  res.json({ id: userId, token });
+});
 
 function checkLimit(req, res, next) {
-  const userKey = req.headers['x-user-id'] || req.ip || 'unknown';
+  const userKey = req.headers['x-user-id'];
   const userToken = req.headers['x-user-token'];
 
-  // Защита от подделки: если у пользователя есть ID, но нет правильной подписи - отказ
-  if (userKey !== 'unknown' && userKey !== req.ip) {
-    const expectedToken = crypto.createHmac('sha256', SECRET_KEY).update(userKey).digest('hex');
-    if (userToken !== expectedToken) {
-      return res.status(403).json({ error: 'Недействительный токен пользователя' });
-    }
+  if (!userKey || !userToken) {
+    return res.status(403).json({ error: 'Отсутствует токен авторизации' });
   }
 
+  // Проверка подписи
+  const expectedToken = crypto.createHmac('sha256', SECRET_KEY).update(userKey).digest('hex');
+  if (userToken !== expectedToken) {
+    return res.status(403).json({ error: 'Недействительный токен пользователя' });
+  }
+
+  // Ограничение размера Map (LRU-логика)
   if (userLimits.size >= MAX_USERS_IN_MAP && !userLimits.has(userKey)) {
     const oldestKey = userLimits.keys().next().value;
     userLimits.delete(oldestKey);
@@ -72,18 +84,19 @@ function checkLimit(req, res, next) {
     user = { tries: FREE_TRIES, lastActive: Date.now() }; 
     userLimits.set(userKey, user); 
   } else {
-    // LRU-ЛОГИКА: Обновляем позицию в Map
     userLimits.delete(userKey);
     userLimits.set(userKey, user);
   }
 
   if (user.tries <= 0) { return res.status(403).json({ error: 'LIMIT_REACHED' }); }
+  
   user.tries -= 1;
   user.lastActive = Date.now();
   res.setHeader('X-Tries-Left', user.tries);
   next();
 }
 
+// Автоочистка (3 бесплатные проверки в день)
 setInterval(() => {
   const now = Date.now();
   for (const [key, user] of userLimits.entries()) {
@@ -91,26 +104,19 @@ setInterval(() => {
   }
 }, 60 * 60 * 1000);
 
+// Маршруты
 app.use('/api/leaks', checkLimit, require('./routes/leaks'));
 app.use('/api/passwords', checkLimit, require('./routes/passwords'));
 app.use('/api/urls', checkLimit, require('./routes/urls'));
 app.use('/api/files', checkLimit, require('./routes/files'));
 
-// ГЕНЕРАЦИЯ ТОКЕНА ДЛЯ КЛИЕНТА
-app.get('/api/get-token', (req, res) => {
-  const userId = req.query.id || req.ip;
-  const token = crypto.createHmac('sha256', SECRET_KEY).update(userId).digest('hex');
-  res.json({ id: userId, token });
-});
-
-// --- WEBHOOK ДЛЯ LAVA.RU (ЗАГОТОВКА) ---
-// Когда Lava одобрит, мы сюда добавим проверку подписи
+// Webhook заготовка
 app.post('/api/lava-webhook', (req, res) => {
-  console.log('Получен вебхук от Lava:', req.body);
-  // TODO: Проверить подпись, сумму, статус и начислить запросы
+  console.log('Webhook:', req.body);
   res.status(200).send('OK');
 });
 
+// Оплата
 app.post('/api/buy', async (req, res) => {
   try {
     const response = await fetch('https://api.crystalpay.io/v2/invoice/create/', {
