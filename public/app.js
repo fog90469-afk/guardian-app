@@ -222,3 +222,64 @@ document.querySelectorAll('.apple-chk').forEach(c => c.addEventListener('change'
   const checked = document.querySelectorAll('.apple-chk:checked').length; const s = $('#apple-score');
   if (checked < 3) { s.className = 'apple-score bad'; s.textContent = `🚨 Защита слабая (${checked}/4)`; } else { s.className = 'apple-score good'; s.textContent = `✅ Отлично (${checked}/4)`; }
 }));
+// ===== OSINT =====
+document.addEventListener('DOMContentLoaded', () => {
+  const osintBtn = document.getElementById('osint-btn');
+  if (!osintBtn) return;
+
+  osintBtn.addEventListener('click', async () => {
+    if (osintBtn.classList.contains('busy')) return;
+    const u = document.getElementById('osint-input').value.trim(); if (!u) return;
+    
+    osintBtn.classList.add('busy'); osintBtn.disabled = true; osintBtn.innerText = 'Сканирую...';
+    const b = document.getElementById('osint-result'); b.className = 'result-box'; b.style.display = 'none';
+    const finish = await runDeepScan('osint', 10000);
+    
+    try {
+      const isPremium = localStorage.getItem('guardian_premium') === 'true';
+      const d = await safeFetch('/api/osint', { 
+        method: 'POST', 
+        headers: {'content-type':'application/json', 'x-is-premium': isPremium ? 'true' : 'false'}, 
+        body: JSON.stringify({ username: u }) 
+      });
+      
+      if (d.foundCount === 0) {
+        b.className = 'result-box show safe';
+        b.textContent = 'Никнейм "' + d.username + '" не найден на популярных сайтах.';
+      } else {
+        b.className = 'result-box show warning';
+        if (isPremium) {
+          let listHtml = '<span class="result-title">Никнейм найден на ' + d.foundCount + ' из ' + d.totalSites + ' сайтов:</span><ul style="margin-top:10px; padding-left:20px;">';
+          d.sites.forEach(s => {
+            listHtml += '<li style="margin-bottom:5px;"><a href="' + s.url + '" target="_blank" rel="noopener noreferrer" style="color: #3b82f6;">' + s.site + '</a></li>';
+          });
+          listHtml += '</ul>';
+          b.innerHTML = listHtml;
+        } else {
+          b.innerHTML = '<span class="result-title">Никнейм найден на ' + d.foundCount + ' из ' + d.totalSites + ' сайтов!</span>' +
+            '<p style="margin-top:10px;">Купите <b>Премиум за 500 руб.</b>, чтобы увидеть полный список и снять все лимиты.</p>' +
+            '<button class="btn-unlock" onclick="buyPremium()">Купить Премиум (500 руб.)</button>';
+        }
+      }
+    } catch (e) { 
+      b.className = 'result-box show ' + (e.message === 'LIMIT' ? 'warning' : 'error'); 
+      b.textContent = e.message === 'LIMIT' ? '' : ('Ошибка: ' + e.message); 
+    } finally { 
+      finish(); 
+      osintBtn.classList.remove('busy'); osintBtn.disabled = false; osintBtn.innerText = 'Проверить'; 
+    }
+  });
+});
+
+async function buyPremium() {
+  try {
+    const res = await fetch('/api/buy', { 
+      method: 'POST', 
+      headers: {'content-type': 'application/json'}, 
+      body: JSON.stringify({ amount: 500, description: 'Премиум подписка Guardian' }) 
+    });
+    const data = await res.json();
+    if (data.url) window.location.href = data.url;
+    else alert('Ошибка: ' + (data.error || 'Неизвестно'));
+  } catch (e) { alert('Сервер не отвечает.'); }
+}

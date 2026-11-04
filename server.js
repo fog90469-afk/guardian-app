@@ -4,55 +4,47 @@ const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const crypto = require('crypto'); 
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.set('trust proxy', 1);
 
-// Безопасность (CSP)
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"], 
+      scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       connectSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
-      objectSrc: ["'none'"], 
-      baseUri: ["'self'"],   
-      frameAncestors: ["'none'"], 
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      frameAncestors: ["'none'"],
     },
   },
 }));
 
-// CORS
 app.use(cors({
   origin: ['https://guardian-app-3sy1.onrender.com', 'https://guardian-app-r3y1.onrender.com'],
   exposedHeaders: ['X-Tries-Left'],
-  allowedHeaders: ['Content-Type', 'x-user-id', 'x-user-token']
+  allowedHeaders: ['Content-Type', 'x-user-id', 'x-user-token', 'x-is-premium']
 }));
 
 app.use(express.json({ limit: '10kb' }));
-
-// Лимиты
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use('/api', limiter);
-
-const payLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5 });
+const payLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10 });
 app.use('/api/buy', payLimiter);
-
 app.use(express.static(path.resolve(process.cwd(), 'public')));
 
-// --- СИСТЕМА ЛИМИТОВ ---
 const userLimits = new Map();
 const FREE_TRIES = 3;
 const MAX_USERS_IN_MAP = 50000;
 const SECRET_KEY = process.env.SECRET_KEY || 'super_secret_guardian_key_123';
 
-// Выдача токена клиенту
 app.get('/api/get-token', (req, res) => {
   const userId = req.query.id || 'user_' + crypto.randomBytes(8).toString('hex');
   const token = crypto.createHmac('sha256', SECRET_KEY).update(userId).digest('hex');
@@ -62,86 +54,65 @@ app.get('/api/get-token', (req, res) => {
 function checkLimit(req, res, next) {
   const userKey = req.headers['x-user-id'];
   const userToken = req.headers['x-user-token'];
+  const isPremium = req.headers['x-is-premium'] === 'true';
 
-  if (!userKey || !userToken) {
-    return res.status(403).json({ error: 'Отсутствует токен авторизации' });
-  }
-
-  // Проверка подписи
+  if (!userKey || !userToken) return res.status(403).json({ error: 'Нет токена' });
   const expectedToken = crypto.createHmac('sha256', SECRET_KEY).update(userKey).digest('hex');
-  if (userToken !== expectedToken) {
-    return res.status(403).json({ error: 'Недействительный токен пользователя' });
-  }
+  if (userToken !== expectedToken) return res.status(403).json({ error: 'Недействительный токен' });
 
-  // Ограничение размера Map (LRU-логика)
+  if (isPremium) return next();
+
   if (userLimits.size >= MAX_USERS_IN_MAP && !userLimits.has(userKey)) {
-    const oldestKey = userLimits.keys().next().value;
-    userLimits.delete(oldestKey);
+    userLimits.delete(userLimits.keys().next().value);
   }
 
   let user = userLimits.get(userKey);
-  if (!user) { 
-    user = { tries: FREE_TRIES, lastActive: Date.now() }; 
-    userLimits.set(userKey, user); 
-  } else {
-    userLimits.delete(userKey);
-    userLimits.set(userKey, user);
-  }
+  if (!user) { user = { tries: FREE_TRIES, lastActive: Date.now() }; userLimits.set(userKey, user); }
+  else { userLimits.delete(userKey); userLimits.set(userKey, user); }
 
-  if (user.tries <= 0) { return res.status(403).json({ error: 'LIMIT_REACHED' }); }
-  
+  if (user.tries <= 0) return res.status(403).json({ error: 'LIMIT_REACHED' });
   user.tries -= 1;
   user.lastActive = Date.now();
   res.setHeader('X-Tries-Left', user.tries);
   next();
 }
 
-// Автоочистка (3 бесплатные проверки в день)
 setInterval(() => {
   const now = Date.now();
   for (const [key, user] of userLimits.entries()) {
-    if (now - user.lastActive > 24 * 60 * 60 * 1000) { userLimits.delete(key); }
+    if (now - user.lastActive > 24 * 60 * 60 * 1000) userLimits.delete(key);
   }
 }, 60 * 60 * 1000);
 
-// Маршруты
 app.use('/api/leaks', checkLimit, require('./routes/leaks'));
 app.use('/api/passwords', checkLimit, require('./routes/passwords'));
 app.use('/api/urls', checkLimit, require('./routes/urls'));
 app.use('/api/files', checkLimit, require('./routes/files'));
+app.use('/api/osint', checkLimit, require('./routes/osint'));
 
-// Webhook заготовка
-app.post('/api/lava-webhook', (req, res) => {
-  console.log('Webhook:', req.body);
-  res.status(200).send('OK');
-});
+app.post('/api/lava-webhook', (req, res) => { res.status(200).send('OK'); });
 
-// Оплата
 app.post('/api/buy', async (req, res) => {
   try {
+    const amount = req.body.amount || 249;
+    const description = req.body.description || 'Покупка 5 проверок в Guardian';
     const response = await fetch('https://api.crystalpay.io/v2/invoice/create/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         auth_login: process.env.CRYSTAL_LOGIN,
         auth_secret: process.env.CRYSTAL_SECRET,
-        amount: 249,
-        type: 'purchase',
-        lifetime: 60,
-        description: 'Покупка 5 проверок в Guardian'
+        amount, type: 'purchase', lifetime: 60, description
       }),
       signal: AbortSignal.timeout(10000)
     });
-    if (!response.ok) throw new Error(`CrystalPay HTTP ${response.status}`);
+    if (!response.ok) throw new Error('CrystalPay HTTP ' + response.status);
     const data = await response.json();
     if (data.url) return res.json({ url: data.url });
-    return res.status(500).json({ error: 'Платежная система не вернула ссылку' });
+    return res.status(500).json({ error: 'Платежка не вернула ссылку' });
   } catch (e) {
-    console.error('Ошибка оплаты:', e.message);
     res.status(500).json({ error: 'Ошибка сети' });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ Сервер запущен: http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log('Server: http://localhost:' + PORT));
