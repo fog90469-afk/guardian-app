@@ -103,7 +103,8 @@
       <button class="tab" data-tab="file">Файл</button>
       <button class="tab" data-tab="scam">Текст</button>
       <button class="tab" data-tab="detox" style="color: var(--detox);">Детокс</button>
-      <button class="tab" data-tab="osint" style="color: #f59e0b;">Никнейм</button>`n      <button class="tab" data-tab="apple">Apple ID</button>
+      <button class="tab" data-tab="osint" style="color: #f59e0b;">Никнейм</button>`n      <button class="tab" data-tab="osint" style="color: #f59e0b;">Никнейм</button>
+      <button class="tab" data-tab="apple">Apple ID</button>
     </div>
     <div class="panel active" id="panel-email">
       <input type="text" id="email-input" placeholder="you@example.com">
@@ -170,6 +171,15 @@
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="detox-progress-fill" style="background: var(--detox);"></div></div>
       </div>
       <div class="result-box" id="detox-result"></div>
+    </div>
+        <div class="panel" id="panel-osint">
+      <input type="text" id="osint-input" placeholder="Введите ваш никнейм (например, fog90469)">
+      <button class="action-btn" id="osint-btn" style="background: var(--warning);">Проверить</button>
+      <div class="progress-container" id="osint-progress">
+        <div class="progress-info"><span id="osint-progress-text">Поиск...</span><span id="osint-progress-percent">0%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="osint-progress-fill" style="background: var(--warning);"></div></div>
+      </div>
+      <div class="result-box" id="osint-result"></div>
     </div>
     <div class="panel" id="panel-apple">
       <p style="font-size: 13px; margin-bottom: 10px; color: var(--sub);">Отметьте пункты, которые у вас есть:</p>
