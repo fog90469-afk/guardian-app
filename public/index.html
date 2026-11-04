@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -73,6 +73,16 @@
   .btn-buy { width: 100%; padding: 16px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 12px; }
   .btn-close { width: 100%; padding: 14px; background: rgba(255,255,255,0.05); color: var(--sub); border: none; border-radius: 12px; cursor: pointer; }
   
+  /* СТИЛИ ДЛЯ ГЛУБОКОГО АНАЛИЗА */
+  .blurred { filter: blur(5px); user-select: none; pointer-events: none; }
+  .btn-unlock {
+    width: 100%; margin-top: 15px; padding: 12px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff; border: none; border-radius: 8px;
+    font-weight: 700; cursor: pointer; font-size: 14px; transition: transform 0.2s;
+  }
+  .btn-unlock:hover { transform: scale(1.02); }
+
   footer { text-align: center; margin-top: 40px; padding-bottom: 30px; font-size: 13px; color: var(--sub); }
   footer a { color: var(--primary); text-decoration: none; margin: 0 10px; }
   footer a:hover { text-decoration: underline; }

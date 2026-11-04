@@ -3,8 +3,6 @@ const router = express.Router();
 
 router.post('/', async (req, res) => {
   const { query } = req.body;
-  
-  // ИСПРАВЛЕНО: Проверка типа и длины
   if (typeof query !== 'string' || query.trim().length === 0 || query.length > 100) {
     return res.status(400).json({ error: 'Некорректный запрос (макс 100 символов)' });
   }
@@ -25,7 +23,12 @@ router.post('/', async (req, res) => {
     }
 
     if (data && data.success) {
-      return res.json({ found: true, count: data.found || 0, sources: data.sources || [], fields: data.fields || [] });
+      return res.json({ 
+        found: true, 
+        count: data.found || 0, 
+        sources: data.sources || [], 
+        fields: data.fields || [] 
+      });
     }
     return res.json({ found: false });
   } catch (e) {
