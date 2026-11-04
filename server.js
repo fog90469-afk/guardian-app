@@ -7,7 +7,6 @@ const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Безопасность и CORS
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({
   exposedHeaders: ['X-Tries-Left'],
@@ -38,53 +37,45 @@ function checkLimit(req, res, next) {
   next();
 }
 
-// Маршруты
 app.use('/api/leaks', checkLimit, require('./routes/leaks'));
 app.use('/api/passwords', checkLimit, require('./routes/passwords'));
 app.use('/api/urls', checkLimit, require('./routes/urls'));
 app.use('/api/files', checkLimit, require('./routes/files'));
 
-// CRYSTALPAY (ИСПРАВЛЕННЫЙ)
+// --- CRYSTALPAY (ИСПРАВЛЕНО) ---
 app.post('/api/buy', async (req, res) => {
   try {
-    const response = await fetch('https://api.crystalpay.io/v2/invoice/create', {
+    const response = await fetch('https://api.crystalpay.io/v2/invoice/create/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         auth_login: process.env.CRYSTAL_LOGIN,
         auth_secret: process.env.CRYSTAL_SECRET,
-        auth_salt: process.env.CRYSTAL_SALT,
         amount: 249,
         type: 'purchase',
         lifetime: 60,
-        order_id: 'order_' + Date.now()
+        description: 'Покупка 5 проверок в Guardian'
       })
     });
 
     const data = await response.json();
+    console.log('Ответ от CrystalPay:', data); // Пригодится для отладки
 
-    // Проверяем, пришла ли ссылка на оплату (url)
+    // Если пришла ссылка на оплату
     if (data.url) {
-      res.json({ url: data.url });
+      return res.json({ url: data.url });
     } 
-    // Если пришла ошибка
-    else if (data.error) {
-      console.log("❌ ОШИБКА CRYSTALPAY:", data.error);
-      res.status(500).json({ error: data.error });
-    } 
-    // Если пришел флаг true и id счета - собираем ссылку сами
-    else if (data.id) {
-      // Стандартный формат ссылки на оплату CrystalPay
-      const payUrl = `https://crystalpay.io/invoice/${data.id}`;
-      res.json({ url: payUrl });
-    } 
-    // Если ничего не подошло
-    else {
-      console.log("❌ НЕИЗВЕСТНЫЙ ОТВЕТ:", data);
-      res.status(500).json({ error: 'Неизвестный ответ от платежной системы' });
+    
+    // Если пришла ошибка, отдаем её текст на клиент
+    if (data.errors && data.errors.length > 0) {
+      return res.status(500).json({ error: data.errors.join(', ') });
     }
+
+    // Если ничего не подошло
+    return res.status(500).json({ error: 'Платежная система не вернула ссылку на оплату' });
+
   } catch (e) {
-    console.log("❌ ОШИБКА СЕТИ:", e);
+    console.error('Ошибка сети при оплате:', e);
     res.status(500).json({ error: 'Ошибка сети' });
   }
 });
