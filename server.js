@@ -34,18 +34,10 @@ app.use(cors({
 
 app.use(express.json({ limit: '10kb' })); 
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 100, 
-  message: { error: 'Слишком много запросов. Подождите 15 минут.' }
-});
+const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 app.use('/api', limiter);
 
-const payLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, 
-  max: 5, 
-  message: { error: 'Слишком много попыток оплаты. Попробуйте позже.' }
-});
+const payLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 5 });
 app.use('/api/buy', payLimiter);
 
 app.use(express.static(path.resolve(process.cwd(), 'public')));
@@ -53,19 +45,30 @@ app.use(express.static(path.resolve(process.cwd(), 'public')));
 // --- СИСТЕМА ЛИМИТОВ ---
 const userLimits = new Map();
 const FREE_TRIES = 3;
+const MAX_USERS_IN_MAP = 50000; // Защита от переполнения памяти
 
 function checkLimit(req, res, next) {
   const userKey = req.headers['x-user-id'] || req.ip || 'unknown';
+  
+  // ИСПРАВЛЕНО: Защита от переполнения Map
+  if (userLimits.size >= MAX_USERS_IN_MAP && !userLimits.has(userKey)) {
+    // Удаляем самую старую запись
+    const oldestKey = userLimits.keys().next().value;
+    userLimits.delete(oldestKey);
+  }
+
   let user = userLimits.get(userKey);
   if (!user) { user = { tries: FREE_TRIES, lastActive: Date.now() }; userLimits.set(userKey, user); }
+  
   if (user.tries <= 0) { return res.status(403).json({ error: 'LIMIT_REACHED' }); }
+  
   user.tries -= 1;
-  user.lastActive = Date.now(); // Обновляем время активности
+  user.lastActive = Date.now();
   res.setHeader('X-Tries-Left', user.tries);
   next();
 }
 
-// ИСПРАВЛЕНО: Автоочистка старых записей (раз в сутки)
+// Автоочистка (3 бесплатные попытки в день)
 setInterval(() => {
   const now = Date.now();
   for (const [key, user] of userLimits.entries()) {
@@ -73,13 +76,14 @@ setInterval(() => {
       userLimits.delete(key);
     }
   }
-}, 60 * 60 * 1000); // Проверка каждый час
+}, 60 * 60 * 1000);
 
 app.use('/api/leaks', checkLimit, require('./routes/leaks'));
 app.use('/api/passwords', checkLimit, require('./routes/passwords'));
 app.use('/api/urls', checkLimit, require('./routes/urls'));
 app.use('/api/files', checkLimit, require('./routes/files'));
 
+// CRYSTALPAY (ИСПРАВЛЕНО: добавлены таймауты и проверка r.ok)
 app.post('/api/buy', async (req, res) => {
   try {
     const response = await fetch('https://api.crystalpay.io/v2/invoice/create/', {
@@ -92,18 +96,25 @@ app.post('/api/buy', async (req, res) => {
         type: 'purchase',
         lifetime: 60,
         description: 'Покупка 5 проверок в Guardian'
-      })
+      }),
+      signal: AbortSignal.timeout(10000) // Защита от зависания
     });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`CrystalPay HTTP ${response.status}: ${errText}`);
+    }
+
     const data = await response.json();
     if (data.url) return res.json({ url: data.url });
     if (data.errors && data.errors.length > 0) return res.status(500).json({ error: data.errors.join(', ') });
     return res.status(500).json({ error: 'Платежная система не вернула ссылку' });
   } catch (e) {
-    console.error('Ошибка сети при оплате:', e);
-    res.status(500).json({ error: 'Ошибка сети' });
+    console.error('Ошибка сети при оплате:', e.message);
+    res.status(500).json({ error: 'Ошибка сети платежной системы' });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Сервер запущен в безопасном режиме: http://localhost:${PORT}`);
+  console.log(`✅ Сервер запущен: http://localhost:${PORT}`);
 });

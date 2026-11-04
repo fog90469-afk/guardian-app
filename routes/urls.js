@@ -4,14 +4,17 @@ const VT_KEY = process.env.VT_API_KEY;
 
 router.post('/', async (req, res) => {
   let { url } = req.body;
-  if (!url) return res.status(400).json({ error: 'Нужна ссылка' });
+  
+  if (typeof url !== 'string' || url.length === 0 || url.length > 2048) {
+    return res.status(400).json({ error: 'Некорректная ссылка' });
+  }
   if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
   try {
     const b64url = Buffer.from(url).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
     let r = await fetch('https://www.virustotal.com/api/v3/urls/' + b64url, { 
       headers: { 'x-apikey': VT_KEY },
-      signal: AbortSignal.timeout(10000) // VirusTotal может думать до 10 сек
+      signal: AbortSignal.timeout(10000)
     });
     
     if (r.status === 404) {
@@ -47,7 +50,7 @@ router.post('/', async (req, res) => {
     return res.json({ verdict: stats.malicious > 0 ? 'danger' : 'safe', stats });
   } catch (e) {
     console.error('VT Error:', e.message);
-    return res.status(500).json({ error: 'Ошибка VirusTotal. Попробуйте позже.' });
+    return res.status(500).json({ error: 'Ошибка VirusTotal.' });
   }
 });
 module.exports = router;

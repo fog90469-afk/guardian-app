@@ -3,7 +3,11 @@ const router = express.Router();
 
 router.post('/', async (req, res) => {
   const { query } = req.body;
-  if (!query) return res.status(400).json({ error: 'Введите данные' });
+  
+  // ИСПРАВЛЕНО: Проверка типа и длины
+  if (typeof query !== 'string' || query.trim().length === 0 || query.length > 100) {
+    return res.status(400).json({ error: 'Некорректный запрос (макс 100 символов)' });
+  }
 
   try {
     const r = await fetch('https://leakcheck.io/api/public?check=' + encodeURIComponent(query), {
@@ -13,7 +17,6 @@ router.post('/', async (req, res) => {
     
     if (!r.ok) throw new Error(`API вернул статус ${r.status}`);
 
-    // ИСПРАВЛЕНО: Если JSON битый, выбрасываем ошибку, а не пустой объект
     let data;
     try {
       data = await r.json();
@@ -27,7 +30,7 @@ router.post('/', async (req, res) => {
     return res.json({ found: false });
   } catch (e) {
     console.error('LeakCheck Error:', e.message);
-    return res.status(500).json({ error: 'Сервис проверки временно недоступен. Попробуйте позже.' });
+    return res.status(500).json({ error: 'Сервис проверки временно недоступен.' });
   }
 });
 module.exports = router;

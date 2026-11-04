@@ -4,7 +4,11 @@ const VT_KEY = process.env.VT_API_KEY;
 
 router.post('/', async (req, res) => {
   const { hash } = req.body;
-  if (!hash) return res.status(400).json({ error: 'Нужен хэш' });
+  
+  // ИСПРАВЛЕНО: Хэш SHA-256 всегда 64 символа (hex)
+  if (typeof hash !== 'string' || hash.length !== 64) {
+    return res.status(400).json({ error: 'Некорректный хэш файла' });
+  }
 
   try {
     const r = await fetch('https://www.virustotal.com/api/v3/files/' + hash, { 
@@ -19,7 +23,7 @@ router.post('/', async (req, res) => {
     return res.json({ status: 'completed', verdict: stats.malicious > 0 ? 'danger' : 'safe', stats });
   } catch (e) {
     console.error('VT File Error:', e.message);
-    return res.status(500).json({ error: 'Ошибка проверки файла. Попробуйте позже.' });
+    return res.status(500).json({ error: 'Ошибка проверки файла.' });
   }
 });
 module.exports = router;
