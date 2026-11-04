@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🛡️ Guardian</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+<title>рџ›ЎпёЏ Guardian</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>рџ›ЎпёЏ</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -78,45 +78,45 @@
 
 <div class="container">
   <div class="header">
-    <h1>🛡️ Guardian</h1>
-    <div class="tries-badge" id="tries-counter">Осталось проверок: ...</div>
+    <h1>рџ›ЎпёЏ Guardian</h1>
+    <div class="tries-badge" id="tries-counter">РћСЃС‚Р°Р»РѕСЃСЊ РїСЂРѕРІРµСЂРѕРє: ...</div>
   </div>
 
   <div class="card">
     <div class="tabs">
       <button class="tab active" data-tab="email">Email</button>
-      <button class="tab" data-tab="password">Пароль</button>
-      <button class="tab" data-tab="url">Ссылка</button>
-      <button class="tab" data-tab="phone">Телефон</button>
-      <button class="tab" data-tab="file">Файл</button>
-      <button class="tab" data-tab="scam">Текст</button>
-      <button class="tab" data-tab="detox" style="color: var(--detox);">Детокс</button>
+      <button class="tab" data-tab="password">РџР°СЂРѕР»СЊ</button>
+      <button class="tab" data-tab="url">РЎСЃС‹Р»РєР°</button>
+      <button class="tab" data-tab="phone">РўРµР»РµС„РѕРЅ</button>
+      <button class="tab" data-tab="file">Р¤Р°Р№Р»</button>
+      <button class="tab" data-tab="scam">РўРµРєСЃС‚</button>
+      <button class="tab" data-tab="detox" style="color: var(--detox);">Р”РµС‚РѕРєСЃ</button>
       <button class="tab" data-tab="apple">Apple ID</button>
     </div>
 
     <div class="panel active" id="panel-email">
       <input type="text" id="email-input" placeholder="you@example.com">
-      <button class="action-btn" id="email-btn">Проверить утечки</button>
+      <button class="action-btn" id="email-btn">РџСЂРѕРІРµСЂРёС‚СЊ СѓС‚РµС‡РєРё</button>
       <div class="progress-container" id="email-progress">
-        <div class="progress-info"><span id="email-progress-text">Поиск...</span><span id="email-progress-percent">0%</span></div>
+        <div class="progress-info"><span id="email-progress-text">РџРѕРёСЃРє...</span><span id="email-progress-percent">0%</span></div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="email-progress-fill"></div></div>
       </div>
       <div class="result-box" id="email-result"></div>
     </div>
 
     <div class="panel" id="panel-password">
-      <input type="password" id="pass-input" placeholder="Введите пароль">
-      <button class="action-btn" id="pass-btn">Проверить пароль</button>
+      <input type="password" id="pass-input" placeholder="Р’РІРµРґРёС‚Рµ РїР°СЂРѕР»СЊ">
+      <button class="action-btn" id="pass-btn">РџСЂРѕРІРµСЂРёС‚СЊ РїР°СЂРѕР»СЊ</button>
       <div class="progress-container" id="pass-progress">
-        <div class="progress-info"><span id="pass-progress-text">Анализ...</span><span id="pass-progress-percent">0%</span></div>
+        <div class="progress-info"><span id="pass-progress-text">РђРЅР°Р»РёР·...</span><span id="pass-progress-percent">0%</span></div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="pass-progress-fill"></div></div>
       </div>
       <div class="result-box" id="pass-result"></div>
     </div>
 
     <div class="panel" id="panel-url">
-      <input type="text" id="url-input" placeholder="https://ссылка.com">
-      <button class="action-btn" id="url-btn">Сканировать</button>
+      <input type="text" id="url-input" placeholder="https://СЃСЃС‹Р»РєР°.com">
+      <button class="action-btn" id="url-btn">РЎРєР°РЅРёСЂРѕРІР°С‚СЊ</button>
       <div class="progress-container" id="url-progress">
         <div class="progress-info"><span id="url-progress-text">VirusTotal...</span><span id="url-progress-percent">0%</span></div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="url-progress-fill" style="background: var(--warning);"></div></div>
@@ -126,9 +126,9 @@
 
     <div class="panel" id="panel-phone">
       <input type="text" id="phone-input" placeholder="+7 999 123-45-67">
-      <button class="action-btn" id="phone-btn">Проверить номер</button>
+      <button class="action-btn" id="phone-btn">РџСЂРѕРІРµСЂРёС‚СЊ РЅРѕРјРµСЂ</button>
       <div class="progress-container" id="phone-progress">
-        <div class="progress-info"><span id="phone-progress-text">Поиск...</span><span id="phone-progress-percent">0%</span></div>
+        <div class="progress-info"><span id="phone-progress-text">РџРѕРёСЃРє...</span><span id="phone-progress-percent">0%</span></div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="phone-progress-fill"></div></div>
       </div>
       <div class="result-box" id="phone-result"></div>
@@ -137,21 +137,21 @@
     <div class="panel" id="panel-file">
       <div class="drop-zone" id="drop-zone">
         <svg viewBox="0 0 24 24"><path d="M12 2L4 10H9V20H15V10H20L12 2Z"/></svg>
-        <p>Нажмите, чтобы выбрать файл</p>
+        <p>РќР°Р¶РјРёС‚Рµ, С‡С‚РѕР±С‹ РІС‹Р±СЂР°С‚СЊ С„Р°Р№Р»</p>
         <input type="file" id="file-input" style="display: none;">
       </div>
       <div class="progress-container" id="file-progress">
-        <div class="progress-info"><span id="file-progress-text">Считывание...</span><span id="file-progress-percent">0%</span></div>
+        <div class="progress-info"><span id="file-progress-text">РЎС‡РёС‚С‹РІР°РЅРёРµ...</span><span id="file-progress-percent">0%</span></div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="file-progress-fill" style="background: #8b5cf6;"></div></div>
       </div>
       <div class="result-box" id="file-result"></div>
     </div>
 
     <div class="panel" id="panel-scam">
-      <textarea id="scam-input" placeholder="Вставьте подозрительный текст..."></textarea>
-      <button class="action-btn" id="scam-btn" style="background: var(--danger);">Анализ текста</button>
+      <textarea id="scam-input" placeholder="Р’СЃС‚Р°РІСЊС‚Рµ РїРѕРґРѕР·СЂРёС‚РµР»СЊРЅС‹Р№ С‚РµРєСЃС‚..."></textarea>
+      <button class="action-btn" id="scam-btn" style="background: var(--danger);">РђРЅР°Р»РёР· С‚РµРєСЃС‚Р°</button>
       <div class="progress-container" id="scam-progress">
-        <div class="progress-info"><span id="scam-progress-text">Поиск...</span><span id="scam-progress-percent">0%</span></div>
+        <div class="progress-info"><span id="scam-progress-text">РџРѕРёСЃРє...</span><span id="scam-progress-percent">0%</span></div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="scam-progress-fill" style="background: var(--danger);"></div></div>
       </div>
       <div class="result-box" id="scam-result"></div>
@@ -159,38 +159,38 @@
 
     <div class="panel" id="panel-detox">
       <input type="text" id="detox-input" placeholder="you@example.com">
-      <button class="action-btn detox-btn" id="detox-btn">Найти и закрыть</button>
+      <button class="action-btn detox-btn" id="detox-btn">РќР°Р№С‚Рё Рё Р·Р°РєСЂС‹С‚СЊ</button>
       <div class="progress-container" id="detox-progress">
-        <div class="progress-info"><span id="detox-progress-text">Поиск...</span><span id="detox-progress-percent">0%</span></div>
+        <div class="progress-info"><span id="detox-progress-text">РџРѕРёСЃРє...</span><span id="detox-progress-percent">0%</span></div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" id="detox-progress-fill" style="background: var(--detox);"></div></div>
       </div>
       <div class="result-box" id="detox-result"></div>
     </div>
 
     <div class="panel" id="panel-apple">
-      <p style="font-size: 13px; margin-bottom: 10px; color: var(--sub);">Отметьте пункты, которые у вас есть:</p>
-      <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> 2FA включена</label>
-      <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> Доверенный номер</label>
-      <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> Ключ восстановления</label>
-      <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> Доверенный контакт</label>
-      <div class="apple-score bad" id="apple-score">🚨 Уязвимо</div>
+      <p style="font-size: 13px; margin-bottom: 10px; color: var(--sub);">РћС‚РјРµС‚СЊС‚Рµ РїСѓРЅРєС‚С‹, РєРѕС‚РѕСЂС‹Рµ Сѓ РІР°СЃ РµСЃС‚СЊ:</p>
+      <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> 2FA РІРєР»СЋС‡РµРЅР°</label>
+      <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> Р”РѕРІРµСЂРµРЅРЅС‹Р№ РЅРѕРјРµСЂ</label>
+      <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> РљР»СЋС‡ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ</label>
+      <label style="display:block; margin-bottom:8px; font-size:14px;"><input type="checkbox" class="apple-chk" style="width:auto; margin-right:8px;"> Р”РѕРІРµСЂРµРЅРЅС‹Р№ РєРѕРЅС‚Р°РєС‚</label>
+      <div class="apple-score bad" id="apple-score">рџљЁ РЈСЏР·РІРёРјРѕ</div>
     </div>
   </div>
 </div>
 
 <div id="paywall-modal">
   <div class="paywall-content">
-    <h2>🚀 Лимит исчерпан</h2>
-    <p>Вы использовали 3 бесплатные проверки.</p>
-    <button class="btn-buy" onclick="buyChecks()">💳 Купить 5 запросов за 249 ₽</button>
-    <button class="btn-close" onclick="document.getElementById('paywall-modal').style.display='none'">Закрыть</button>
+    <h2>рџљЂ Р›РёРјРёС‚ РёСЃС‡РµСЂРїР°РЅ</h2>
+    <p>Р’С‹ РёСЃРїРѕР»СЊР·РѕРІР°Р»Рё 3 Р±РµСЃРїР»Р°С‚РЅС‹Рµ РїСЂРѕРІРµСЂРєРё.</p>
+    <button class="btn-buy" onclick="buyChecks()">рџ’і РљСѓРїРёС‚СЊ 5 Р·Р°РїСЂРѕСЃРѕРІ Р·Р° 249 в‚Ѕ</button>
+    <button class="btn-close" onclick="document.getElementById('paywall-modal').style.display='none'">Р—Р°РєСЂС‹С‚СЊ</button>
   </div>
 </div>
 
 <script>
 const $ = s => document.querySelector(s);
 
-// Генерируем уникальный ID для этого браузера
+// Р“РµРЅРµСЂРёСЂСѓРµРј СѓРЅРёРєР°Р»СЊРЅС‹Р№ ID РґР»СЏ СЌС‚РѕРіРѕ Р±СЂР°СѓР·РµСЂР°
 if (!localStorage.getItem('guardian_uid')) {
   localStorage.setItem('guardian_uid', 'user_' + Math.random().toString(36).substr(2, 9));
 }
@@ -210,7 +210,7 @@ function runProgress(prefix, duration) {
     container.classList.add('active');
     fill.style.width = '0%';
     percent.innerText = '0%';
-    text.innerText = 'Анализ...';
+    text.innerText = 'РђРЅР°Р»РёР·...';
 
     let width = 0;
     const interval = setInterval(() => {
@@ -224,7 +224,7 @@ function runProgress(prefix, duration) {
       clearInterval(interval);
       fill.style.width = '100%';
       percent.innerText = '100%';
-      text.innerText = 'Готово!';
+      text.innerText = 'Р“РѕС‚РѕРІРѕ!';
       setTimeout(() => { container.classList.remove('active'); }, 300);
     });
   });
@@ -235,7 +235,7 @@ function lockButton(btn, isBusy) {
     btn.classList.add('busy');
     btn.disabled = true;
     btn.dataset.originalText = btn.innerText;
-    btn.innerText = '⏳ Обработка...';
+    btn.innerText = 'вЏі РћР±СЂР°Р±РѕС‚РєР°...';
   } else {
     if (btn.dataset.cooldownActive) return;
     btn.classList.remove('busy');
@@ -262,7 +262,7 @@ function startGlobalCooldown(seconds) {
     const update = () => {
       const m = Math.floor(remaining / 60);
       const s = remaining % 60;
-      btn.innerText = `⏳ Подождите ${m}:${s.toString().padStart(2, '0')}`;
+      btn.innerText = `вЏі РџРѕРґРѕР¶РґРёС‚Рµ ${m}:${s.toString().padStart(2, '0')}`;
     };
     update();
 
@@ -290,7 +290,7 @@ async function safeFetch(url, options, btn) {
 
   const r = await fetch(url, options);
   const triesLeft = r.headers.get('X-Tries-Left');
-  if (triesLeft !== null) $('#tries-counter').innerText = `Осталось проверок: ${triesLeft}`;
+  if (triesLeft !== null) $('#tries-counter').innerText = `РћСЃС‚Р°Р»РѕСЃСЊ РїСЂРѕРІРµСЂРѕРє: ${triesLeft}`;
 
   if (r.status === 429) {
     const err = await r.json();
@@ -305,7 +305,7 @@ async function safeFetch(url, options, btn) {
   
   if (!r.ok) {
     const err = await r.json().catch(() => ({}));
-    throw new Error(err.error || 'Ошибка сервера');
+    throw new Error(err.error || 'РћС€РёР±РєР° СЃРµСЂРІРµСЂР°');
   }
   return await r.json();
 }
@@ -327,12 +327,12 @@ async function buyChecks() {
     if (data.url) {
       window.location.href = data.url;
     } else if (data.error) {
-      alert('Ошибка оплаты: ' + data.error);
+      alert('РћС€РёР±РєР° РѕРїР»Р°С‚С‹: ' + data.error);
     } else {
-      alert('Ошибка: Сервер не вернул ссылку на оплату. Проверьте настройки кассы.');
+      alert('РћС€РёР±РєР°: РЎРµСЂРІРµСЂ РЅРµ РІРµСЂРЅСѓР» СЃСЃС‹Р»РєСѓ РЅР° РѕРїР»Р°С‚Сѓ. РџСЂРѕРІРµСЂСЊС‚Рµ РЅР°СЃС‚СЂРѕР№РєРё РєР°СЃСЃС‹.');
     }
   } catch (e) {
-    alert('Сервер не отвечает.');
+    alert('РЎРµСЂРІРµСЂ РЅРµ РѕС‚РІРµС‡Р°РµС‚.');
   }
 }
 
@@ -348,10 +348,10 @@ $('#email-btn').addEventListener('click', async () => {
   try {
     const d = await safeFetch('/api/leaks', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ query: q }) }, $('#email-btn'));
     b.className = 'result-box show ' + (d.found ? 'danger' : 'safe');
-    b.innerHTML = d.found ? `🚨 Найдено в ${d.count} утечках!` : `✅ Утечек не найдено.`;
+    b.innerHTML = d.found ? `рџљЁ РќР°Р№РґРµРЅРѕ РІ ${d.count} СѓС‚РµС‡РєР°С…!` : `вњ… РЈС‚РµС‡РµРє РЅРµ РЅР°Р№РґРµРЅРѕ.`;
   } catch (e) {
     b.className = 'result-box show ' + (e.message === 'COOLDOWN' ? 'warning' : 'error');
-    b.innerHTML = e.message === 'COOLDOWN' ? `⚠️ Вы недавно делали проверку. Подождите, пока пройдет таймер на кнопках.` : `⚠️ ${e.message}`;
+    b.innerHTML = e.message === 'COOLDOWN' ? `вљ пёЏ Р’С‹ РЅРµРґР°РІРЅРѕ РґРµР»Р°Р»Рё РїСЂРѕРІРµСЂРєСѓ. РџРѕРґРѕР¶РґРёС‚Рµ, РїРѕРєР° РїСЂРѕР№РґРµС‚ С‚Р°Р№РјРµСЂ РЅР° РєРЅРѕРїРєР°С….` : `вљ пёЏ ${e.message}`;
   } finally {
     finish(); busy.email = false;
     lockButton($('#email-btn'), false);
@@ -370,10 +370,10 @@ $('#pass-btn').addEventListener('click', async () => {
   try {
     const d = await safeFetch('/api/passwords', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ password: p }) }, $('#pass-btn'));
     b.className = 'result-box show ' + (d.count > 0 ? 'danger' : 'safe');
-    b.innerHTML = d.count > 0 ? `🚨 Пароль слит ${d.count} раз!` : `✅ Пароль надежен.`;
+    b.innerHTML = d.count > 0 ? `рџљЁ РџР°СЂРѕР»СЊ СЃР»РёС‚ ${d.count} СЂР°Р·!` : `вњ… РџР°СЂРѕР»СЊ РЅР°РґРµР¶РµРЅ.`;
   } catch (e) {
     b.className = 'result-box show ' + (e.message === 'COOLDOWN' ? 'warning' : 'error');
-    b.innerHTML = e.message === 'COOLDOWN' ? `⚠️ Вы недавно делали проверку. Подождите, пока пройдет таймер на кнопках.` : `⚠️ ${e.message}`;
+    b.innerHTML = e.message === 'COOLDOWN' ? `вљ пёЏ Р’С‹ РЅРµРґР°РІРЅРѕ РґРµР»Р°Р»Рё РїСЂРѕРІРµСЂРєСѓ. РџРѕРґРѕР¶РґРёС‚Рµ, РїРѕРєР° РїСЂРѕР№РґРµС‚ С‚Р°Р№РјРµСЂ РЅР° РєРЅРѕРїРєР°С….` : `вљ пёЏ ${e.message}`;
   } finally {
     finish(); busy.pass = false;
     lockButton($('#pass-btn'), false);
@@ -392,10 +392,10 @@ $('#url-btn').addEventListener('click', async () => {
   try {
     const d = await safeFetch('/api/urls', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ url: u }) }, $('#url-btn'));
     b.className = 'result-box show ' + (d.verdict === 'danger' ? 'danger' : 'safe');
-    b.innerHTML = d.verdict === 'danger' ? `🚨 ОПАСНАЯ ССЫЛКА!` : `✅ Ссылка безопасна.`;
+    b.innerHTML = d.verdict === 'danger' ? `рџљЁ РћРџРђРЎРќРђРЇ РЎРЎР«Р›РљРђ!` : `вњ… РЎСЃС‹Р»РєР° Р±РµР·РѕРїР°СЃРЅР°.`;
   } catch (e) {
     b.className = 'result-box show ' + (e.message === 'COOLDOWN' ? 'warning' : 'error');
-    b.innerHTML = e.message === 'COOLDOWN' ? `⚠️ Вы недавно делали проверку. Подождите, пока пройдет таймер на кнопках.` : `⚠️ ${e.message}`;
+    b.innerHTML = e.message === 'COOLDOWN' ? `вљ пёЏ Р’С‹ РЅРµРґР°РІРЅРѕ РґРµР»Р°Р»Рё РїСЂРѕРІРµСЂРєСѓ. РџРѕРґРѕР¶РґРёС‚Рµ, РїРѕРєР° РїСЂРѕР№РґРµС‚ С‚Р°Р№РјРµСЂ РЅР° РєРЅРѕРїРєР°С….` : `вљ пёЏ ${e.message}`;
   } finally {
     finish(); busy.url = false;
     lockButton($('#url-btn'), false);
@@ -414,10 +414,10 @@ $('#phone-btn').addEventListener('click', async () => {
   try {
     const d = await safeFetch('/api/leaks', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ query: q }) }, $('#phone-btn'));
     b.className = 'result-box show ' + (d.found ? 'danger' : 'safe');
-    b.innerHTML = d.found ? `🚨 Номер найден в утечках!` : `✅ Утечек нет.`;
+    b.innerHTML = d.found ? `рџљЁ РќРѕРјРµСЂ РЅР°Р№РґРµРЅ РІ СѓС‚РµС‡РєР°С…!` : `вњ… РЈС‚РµС‡РµРє РЅРµС‚.`;
   } catch (e) {
     b.className = 'result-box show ' + (e.message === 'COOLDOWN' ? 'warning' : 'error');
-    b.innerHTML = e.message === 'COOLDOWN' ? `⚠️ Вы недавно делали проверку. Подождите, пока пройдет таймер на кнопках.` : `⚠️ ${e.message}`;
+    b.innerHTML = e.message === 'COOLDOWN' ? `вљ пёЏ Р’С‹ РЅРµРґР°РІРЅРѕ РґРµР»Р°Р»Рё РїСЂРѕРІРµСЂРєСѓ. РџРѕРґРѕР¶РґРёС‚Рµ, РїРѕРєР° РїСЂРѕР№РґРµС‚ С‚Р°Р№РјРµСЂ РЅР° РєРЅРѕРїРєР°С….` : `вљ пёЏ ${e.message}`;
   } finally {
     finish(); busy.phone = false;
     lockButton($('#phone-btn'), false);
@@ -440,11 +440,11 @@ $('#file-input').addEventListener('change', async (e) => {
     
     const d = await safeFetch('/api/files', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ hash: hashHex }) }, dz);
     
-    if (d.status === 'not_found') { b.className = 'result-box show warning'; b.innerHTML = `⚠️ Файл неизвестен антивирусам.`; }
-    else { b.className = 'result-box show ' + (d.verdict === 'danger' ? 'danger' : 'safe'); b.innerHTML = d.verdict === 'danger' ? `🚨 ВИРУС!` : `✅ Файл чист.`; }
+    if (d.status === 'not_found') { b.className = 'result-box show warning'; b.innerHTML = `вљ пёЏ Р¤Р°Р№Р» РЅРµРёР·РІРµСЃС‚РµРЅ Р°РЅС‚РёРІРёСЂСѓСЃР°Рј.`; }
+    else { b.className = 'result-box show ' + (d.verdict === 'danger' ? 'danger' : 'safe'); b.innerHTML = d.verdict === 'danger' ? `рџљЁ Р’РР РЈРЎ!` : `вњ… Р¤Р°Р№Р» С‡РёСЃС‚.`; }
   } catch (e) {
     b.className = 'result-box show ' + (e.message === 'COOLDOWN' ? 'warning' : 'error');
-    b.innerHTML = e.message === 'COOLDOWN' ? `⚠️ Вы недавно делали проверку. Подождите, пока пройдет таймер на кнопках.` : `⚠️ ${e.message}`;
+    b.innerHTML = e.message === 'COOLDOWN' ? `вљ пёЏ Р’С‹ РЅРµРґР°РІРЅРѕ РґРµР»Р°Р»Рё РїСЂРѕРІРµСЂРєСѓ. РџРѕРґРѕР¶РґРёС‚Рµ, РїРѕРєР° РїСЂРѕР№РґРµС‚ С‚Р°Р№РјРµСЂ РЅР° РєРЅРѕРїРєР°С….` : `вљ пёЏ ${e.message}`;
   } finally {
     finish(); busy.file = false; 
     if (!dz.dataset.cooldownActive) { dz.style.pointerEvents = 'auto'; dz.style.opacity = '1'; }
@@ -463,10 +463,10 @@ $('#scam-btn').addEventListener('click', async () => {
   
   await new Promise(r => setTimeout(r, 800));
   
-  if (t.includes('apk') || t.includes('срочно') || t.includes('код') || t.includes('http://')) {
-    b.className = 'result-box show danger'; b.innerHTML = `🚨 ОПАСНЫЙ ТЕКСТ! Не переходите по ссылкам.`;
+  if (t.includes('apk') || t.includes('СЃСЂРѕС‡РЅРѕ') || t.includes('РєРѕРґ') || t.includes('http://')) {
+    b.className = 'result-box show danger'; b.innerHTML = `рџљЁ РћРџРђРЎРќР«Р™ РўР•РљРЎРў! РќРµ РїРµСЂРµС…РѕРґРёС‚Рµ РїРѕ СЃСЃС‹Р»РєР°Рј.`;
   } else {
-    b.className = 'result-box show safe'; b.innerHTML = `✅ Явных угроз нет.`;
+    b.className = 'result-box show safe'; b.innerHTML = `вњ… РЇРІРЅС‹С… СѓРіСЂРѕР· РЅРµС‚.`;
   }
   
   finish(); busy.scam = false; lockButton($('#scam-btn'), false);
@@ -484,14 +484,14 @@ $('#detox-btn').addEventListener('click', async () => {
   try {
     const d = await safeFetch('/api/leaks', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({ query: q }) }, $('#detox-btn'));
     if (d.found && d.sources) {
-      const uniq = [...new Set(d.sources.map(s => s.name || s.domain || 'Сервис'))];
-      let html = `<b>Найдено в ${uniq.length} сервисах:</b><br><br>`;
-      uniq.forEach(s => { html += `<div class="detox-item"><span>${s}</span><a href="https://www.google.com/search?q=how+to+delete+account+${s}" target="_blank" class="detox-link">Удалить</a></div>`; });
+      const uniq = [...new Set(d.sources.map(s => s.name || s.domain || 'РЎРµСЂРІРёСЃ'))];
+      let html = `<b>РќР°Р№РґРµРЅРѕ РІ ${uniq.length} СЃРµСЂРІРёСЃР°С…:</b><br><br>`;
+      uniq.forEach(s => { html += `<div class="detox-item"><span>${s}</span><a href="https://www.google.com/search?q=how+to+delete+account+${s}" target="_blank" class="detox-link">РЈРґР°Р»РёС‚СЊ</a></div>`; });
       b.className = 'result-box show'; b.innerHTML = html;
-    } else { b.className = 'result-box show safe'; b.innerHTML = `✅ Данные не найдены.`; }
+    } else { b.className = 'result-box show safe'; b.innerHTML = `вњ… Р”Р°РЅРЅС‹Рµ РЅРµ РЅР°Р№РґРµРЅС‹.`; }
   } catch (e) {
     b.className = 'result-box show ' + (e.message === 'COOLDOWN' ? 'warning' : 'error');
-    b.innerHTML = e.message === 'COOLDOWN' ? `⚠️ Вы недавно делали проверку. Подождите, пока пройдет таймер на кнопках.` : `⚠️ ${e.message}`;
+    b.innerHTML = e.message === 'COOLDOWN' ? `вљ пёЏ Р’С‹ РЅРµРґР°РІРЅРѕ РґРµР»Р°Р»Рё РїСЂРѕРІРµСЂРєСѓ. РџРѕРґРѕР¶РґРёС‚Рµ, РїРѕРєР° РїСЂРѕР№РґРµС‚ С‚Р°Р№РјРµСЂ РЅР° РєРЅРѕРїРєР°С….` : `вљ пёЏ ${e.message}`;
   } finally {
     finish(); busy.detox = false;
     lockButton($('#detox-btn'), false);
@@ -501,9 +501,17 @@ $('#detox-btn').addEventListener('click', async () => {
 document.querySelectorAll('.apple-chk').forEach(c => c.addEventListener('change', () => {
   const checked = document.querySelectorAll('.apple-chk:checked').length;
   const s = $('#apple-score');
-  if (checked < 3) { s.className = 'apple-score bad'; s.innerHTML = `🚨 Защита слабая (${checked}/4)`; }
-  else { s.className = 'apple-score good'; s.innerHTML = `✅ Отлично (${checked}/4)`; }
+  if (checked < 3) { s.className = 'apple-score bad'; s.innerHTML = `рџљЁ Р—Р°С‰РёС‚Р° СЃР»Р°Р±Р°СЏ (${checked}/4)`; }
+  else { s.className = 'apple-score good'; s.innerHTML = `вњ… РћС‚Р»РёС‡РЅРѕ (${checked}/4)`; }
 }));
 </script>
+<footer style="text-align: center; margin-top: 40px; padding-bottom: 30px; font-size: 13px; color: #94a3b8;">
+  <div style="margin-bottom: 10px;">
+    <a href="/services.html" style="color: #3b82f6; text-decoration: none; margin: 0 10px;">Услуги и цены</a> | 
+    <a href="/terms.html" style="color: #3b82f6; text-decoration: none; margin: 0 10px;">Пользовательское соглашение</a> | 
+    <a href="/contacts.html" style="color: #3b82f6; text-decoration: none; margin: 0 10px;">Контакты</a>
+  </div>
+  <div>© 2026 Guardian. Все права защищены.</div>
+</footer>
 </body>
 </html>
